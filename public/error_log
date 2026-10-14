@@ -1,0 +1,162 @@
+[16-Jun-2025 08:53:27 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:27 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:27 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/../../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:28 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:28 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:28 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/../../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:28 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:28 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:28 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/../../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:34 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:34 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:34 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/../../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:35 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:35 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:53:35 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/../../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:57:40 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:57:40 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:57:40 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/../../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:57:43 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:57:43 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 08:57:43 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/../../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:00:18 UTC] PHP Warning:  require(/home/zetamax/public_html/vendor/composer/../../app/Helpers/CompanySetting.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/vendor/composer/autoload_real.php on line 41
+[16-Jun-2025 09:00:18 UTC] PHP Warning:  require(/home/zetamax/public_html/vendor/composer/../../app/Helpers/CompanySetting.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/vendor/composer/autoload_real.php on line 41
+[16-Jun-2025 09:00:18 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/vendor/composer/../../app/Helpers/CompanySetting.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/zetamax/public_html/vendor/composer/autoload_real.php(45): {closure}('41847f06b01e2a3...', '/home/zetamax/p...')
+#1 /home/zetamax/public_html/vendor/autoload.php(22): ComposerAutoloaderInit9c491b8531eec05ba41a11d9276a5749::getLoader()
+#2 /home/zetamax/public_html/public/index.php(34): require('/home/zetamax/p...')
+#3 {main}
+  thrown in /home/zetamax/public_html/vendor/composer/autoload_real.php on line 41
+[16-Jun-2025 09:00:19 UTC] PHP Warning:  require(/home/zetamax/public_html/vendor/composer/../../app/Helpers/CompanySetting.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/vendor/composer/autoload_real.php on line 41
+[16-Jun-2025 09:00:19 UTC] PHP Warning:  require(/home/zetamax/public_html/vendor/composer/../../app/Helpers/CompanySetting.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/vendor/composer/autoload_real.php on line 41
+[16-Jun-2025 09:00:19 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/vendor/composer/../../app/Helpers/CompanySetting.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/zetamax/public_html/vendor/composer/autoload_real.php(45): {closure}('41847f06b01e2a3...', '/home/zetamax/p...')
+#1 /home/zetamax/public_html/vendor/autoload.php(22): ComposerAutoloaderInit9c491b8531eec05ba41a11d9276a5749::getLoader()
+#2 /home/zetamax/public_html/public/index.php(34): require('/home/zetamax/p...')
+#3 {main}
+  thrown in /home/zetamax/public_html/vendor/composer/autoload_real.php on line 41
+[16-Jun-2025 09:00:32 UTC] PHP Warning:  require(/home/zetamax/public_html/vendor/composer/../../app/Helpers/CompanySetting.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/vendor/composer/autoload_real.php on line 41
+[16-Jun-2025 09:00:32 UTC] PHP Warning:  require(/home/zetamax/public_html/vendor/composer/../../app/Helpers/CompanySetting.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/vendor/composer/autoload_real.php on line 41
+[16-Jun-2025 09:00:32 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/vendor/composer/../../app/Helpers/CompanySetting.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/zetamax/public_html/vendor/composer/autoload_real.php(45): {closure}('41847f06b01e2a3...', '/home/zetamax/p...')
+#1 /home/zetamax/public_html/vendor/autoload.php(22): ComposerAutoloaderInit9c491b8531eec05ba41a11d9276a5749::getLoader()
+#2 /home/zetamax/public_html/public/index.php(34): require('/home/zetamax/p...')
+#3 {main}
+  thrown in /home/zetamax/public_html/vendor/composer/autoload_real.php on line 41
+[16-Jun-2025 09:00:33 UTC] PHP Warning:  require(/home/zetamax/public_html/vendor/composer/../../app/Helpers/CompanySetting.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/vendor/composer/autoload_real.php on line 41
+[16-Jun-2025 09:00:33 UTC] PHP Warning:  require(/home/zetamax/public_html/vendor/composer/../../app/Helpers/CompanySetting.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/vendor/composer/autoload_real.php on line 41
+[16-Jun-2025 09:00:33 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/vendor/composer/../../app/Helpers/CompanySetting.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/zetamax/public_html/vendor/composer/autoload_real.php(45): {closure}('41847f06b01e2a3...', '/home/zetamax/p...')
+#1 /home/zetamax/public_html/vendor/autoload.php(22): ComposerAutoloaderInit9c491b8531eec05ba41a11d9276a5749::getLoader()
+#2 /home/zetamax/public_html/public/index.php(34): require('/home/zetamax/p...')
+#3 {main}
+  thrown in /home/zetamax/public_html/vendor/composer/autoload_real.php on line 41
+[16-Jun-2025 09:01:10 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:10 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:10 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/../../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:12 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:12 UTC] PHP Warning:  require(/home/zetamax/public_html/public/../../vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:12 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/../../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:22 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:22 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:22 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:23 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:23 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:23 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:23 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:23 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:23 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:24 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:24 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:24 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:24 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:24 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:24 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:25 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:25 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:25 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:25 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:25 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:25 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:25 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:25 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:25 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:26 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:26 UTC] PHP Warning:  require(/home/zetamax/public_html/public/vendor/autoload.php): Failed to open stream: No such file or directory in /home/zetamax/public_html/public/index.php on line 34
+[16-Jun-2025 09:01:26 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/zetamax/public_html/public/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/zetamax/public_html/public/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/zetamax/public_html/public/index.php on line 34
+[04-Nov-2025 06:38:00 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.1.33. in /home/coinicon/public_html/vendor/composer/platform_check.php:22
+Stack trace:
+#0 /home/coinicon/public_html/vendor/composer/autoload_real.php(25): require()
+#1 /home/coinicon/public_html/vendor/autoload.php(22): ComposerAutoloaderInit9c491b8531eec05ba41a11d9276a5749::getLoader()
+#2 /home/coinicon/public_html/public/index.php(36): require('/home/coinicon/...')
+#3 {main}
+  thrown in /home/coinicon/public_html/vendor/composer/platform_check.php on line 22
+[15-May-2026 12:28:34 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\Main\HomeController::index() in /home/trevpmtt/public_html/app/Http/Controllers/Main/HomeController.php on line 52
+[15-May-2026 12:28:34 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\Main\HomeController::index() in /home/trevpmtt/public_html/app/Http/Controllers/Main/HomeController.php on line 52
+[15-May-2026 12:28:35 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\Main\HomeController::index() in /home/trevpmtt/public_html/app/Http/Controllers/Main/HomeController.php on line 52
+[15-May-2026 12:28:38 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\Main\HomeController::index() in /home/trevpmtt/public_html/app/Http/Controllers/Main/HomeController.php on line 52
+[15-May-2026 12:28:38 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\Main\HomeController::index() in /home/trevpmtt/public_html/app/Http/Controllers/Main/HomeController.php on line 52
+[15-May-2026 12:28:40 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\Main\HomeController::index() in /home/trevpmtt/public_html/app/Http/Controllers/Main/HomeController.php on line 52
+[15-May-2026 12:28:44 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\Main\HomeController::index() in /home/trevpmtt/public_html/app/Http/Controllers/Main/HomeController.php on line 52
+[15-May-2026 12:28:44 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\Main\HomeController::index() in /home/trevpmtt/public_html/app/Http/Controllers/Main/HomeController.php on line 52
+[15-May-2026 12:28:46 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\Main\HomeController::index() in /home/trevpmtt/public_html/app/Http/Controllers/Main/HomeController.php on line 52
+[03-Jul-2026 18:08:01 Asia/Kolkata] PHP Fatal error:  Namespace declaration statement has to be the very first statement or after any declare call in the script in /home/zionworld/newuddaan.zionworld.tech/app/Http/Controllers/Admin/CategoryController.php on line 4
+[03-Jul-2026 18:08:29 Asia/Kolkata] PHP Fatal error:  Namespace declaration statement has to be the very first statement or after any declare call in the script in /home/zionworld/newuddaan.zionworld.tech/app/Models/Category.php on line 4

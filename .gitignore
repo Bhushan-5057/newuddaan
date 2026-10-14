@@ -1,0 +1,46 @@
+# Environment and secrets
+.env
+.env.backup
+.env.production
+!.env.example
+auth.json
+
+# PHP dependencies (reinstall with: composer install)
+/vendor
+
+# Node dependencies and Vite output (reinstall with: npm install)
+/node_modules
+/public/build
+/public/hot
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Laravel runtime
+/public/storage
+/storage/*.key
+.phpunit.result.cache
+.phpunit.cache
+
+# cPanel / live-server files (paths belong to the host, not this project)
+/php.ini
+/.user.ini
+/.ftpquota
+/cgi-bin
+/.well-known
+
+# Member and company uploads (kept on disk, paths live in the database)
+/public/uploads/*
+!/public/uploads/.gitignore
+
+# OS and editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+/.idea
+/.vscode
+/.fleet
+/.nova
+/.zed
+*.swp
+*.swo
