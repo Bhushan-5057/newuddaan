@@ -123,12 +123,20 @@ $user = Auth::user();
         background: #6c757d;
     }
     .btn-copy,
-    .btn-register {
+    .genealogy-tree .btn.btn-register {
         background: #6c757d;
-        width: 100px;
+        width: 112px;
+        min-width: 112px;
+        max-width: 112px;
         justify-content: center;
-        margin: 5px auto;
-        padding: 2px 0px;
+        margin: 6px auto 0;
+        padding: 4px 10px;
+        font-size: 12px;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: visible;
+        flex-shrink: 0;
+        box-sizing: border-box;
     }
     .empty-node-buttons {
         display: flex;
@@ -137,14 +145,22 @@ $user = Auth::user();
         gap: 8px;
     }
     .genealogy-scroll {
+        display: block;
+        box-sizing: border-box;
         overflow: auto;
-        padding: 20px 5px;
-        min-height: 400px;
-        text-align: center;
-        scroll-behavior: smooth;
-        -webkit-overflow-scrolling: touch;
+        /* Room on every side so the sponsor and both legs stay off the edges. */
+        padding: 32px 28px 56px;
+        height: calc(100vh - 230px);
+        min-height: 360px;
+        text-align: left;
+        scroll-behavior: auto;
         position: relative;
-        touch-action: pan-x pan-y pinch-zoom;
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+    }
+    .genealogy-scroll.is-grabbing {
+        cursor: grabbing;
     }
     .genealogy-scroll::-webkit-scrollbar {
         width: 5px;
@@ -162,29 +178,51 @@ $user = Auth::user();
         background: var(--accent-color);
     }
     .genealogy-tree {
-        display: inline-block;
-        /* Keeps the inline-block off the parent's text baseline. */
+        display: block;
+        width: max-content;
+        min-width: max-content;
+        margin: 0 auto;
+        padding: 8px 36px 28px;
+        box-sizing: content-box;
         vertical-align: top;
+        text-align: center;
         transform-origin: top center;
         transition: transform 0.4s ease;
         will-change: transform;
-        min-width: 300px;
     }
     .genealogy-tree ul {
         padding-top: 15px;
         position: relative;
         padding-left: 0;
+        padding-right: 0;
+        margin: 0 auto;
         display: flex;
         justify-content: center;
+        width: max-content;
+        min-width: max-content;
         transition: var(--transition);
+    }
+    .genealogy-tree > ul::before,
+    .genealogy-tree ul ul::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        border-left: 2px solid var(--line-color);
+        width: 0;
+        height: 15px;
     }
     .genealogy-tree li {
         text-align: center;
         list-style-type: none;
         position: relative;
-        padding: 15px 3px 0 3px;
+        padding: 16px 18px 0;
         transition: var(--transition);
-        flex: 1;
+        flex: 0 0 auto;
+        width: auto;
+        max-width: none;
+        min-width: max-content;
+        box-sizing: border-box;
     }
     .genealogy-tree li::before,
     .genealogy-tree li::after {
@@ -220,19 +258,14 @@ $user = Auth::user();
     .genealogy-tree li:first-child::after {
         border-radius: 5px 0 0 0;
     }
-    .genealogy-tree ul ul::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 50%;
-        border-left: 2px solid var(--line-color);
-        width: 0;
-        height: 15px;
-    }
+    .genealogy-tree > a,
     .genealogy-tree li a {
         text-decoration: none;
         color: var(--text-color);
-        display: inline-block;
+        display: block;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
         border-radius: 8px;
         transition: var(--transition);
     }
@@ -409,29 +442,6 @@ $user = Auth::user();
         font-size: 12px;
         color: var(--text-color);
     }
-    @media (max-width: 1200px) {
-        .member-view-box,
-        .empty-node {
-            width: 120px;
-            min-height: 120px;
-        }
-        .member-image img,
-        .member-image-inactive img {
-            width: 70px;
-            height: 70px;
-        }
-        .member-header,
-        .member-header-inactive {
-            font-size: 11px;
-        }
-        .member-footer div.name {
-            font-size: 11px;
-        }
-        .downline span {
-            font-size: 8px;
-            padding: 1px 4px;
-        }
-    }
     @media (max-width: 992px) {
         .tree-container {
             padding: 15px 8px;
@@ -443,47 +453,11 @@ $user = Auth::user();
             font-size: 0.9rem;
         }
         .genealogy-scroll {
-            padding: 15px 5px;
-        }
-    }
-    @media (max-width: 768px) {
-        .controls {
-            gap: 6px;
-        }
-        .btn {
-            padding: 2px 0px;
-            font-size: 0.8rem;
-        }
-        .member-view-box,
-        .empty-node {
-            width: 110px;
-            min-height: 110px;
-        }
-        .member-image img,
-        .member-image-inactive img {
-            width: 40px;
-            height: 40px;
-        }
-        .member-header,
-        .member-header-inactive {
-            font-size: 10px;
-        }
-        .member-footer div.name {
-            font-size: 10px;
+            height: calc(100vh - 180px);
+            padding: 20px 12px 40px;
         }
     }
     @media (max-width: 576px) {
-        .member-view-box,
-        .empty-node {
-            width: 100%;
-            max-width: 160px;
-            min-height: 100px;
-        }
-        .member-image img,
-        .member-image-inactive img {
-            width: 30px;
-            height: 30px;
-        }
         .page-title {
             font-size: 1.6rem;
         }
@@ -494,27 +468,15 @@ $user = Auth::user();
             flex-direction: column;
             align-items: center;
         }
-        .btn {
+        .controls .btn {
             width: 100%;
             max-width: 180px;
             justify-content: center;
         }
         .genealogy-scroll {
-            min-height: 350px;
-        }
-    }
-    @media (max-width: 400px) {
-        .member-view-box,
-        .empty-node {
-            max-width: 100px;
-        }
-        .member-image img,
-        .member-image-inactive img {
-            width: 30px;
-            height: 30px;
-        }
-        .btn {
-            max-width: 160px;
+            height: calc(100vh - 140px);
+            min-height: 320px;
+            padding: 16px 8px 36px;
         }
     }
 </style>
@@ -1073,7 +1035,7 @@ $user = Auth::user();
                 renderBreadcrumb();
                 renderHiddenNote(res.hidden);
                 updateZoom();
-                $('.genealogy-scroll').scrollLeft(0);
+                centerSponsor();
                 showNotification('Showing ' + (res.root ? res.root.username : 'team'));
             })
             .fail(function(xhr) {
@@ -1092,6 +1054,8 @@ $user = Auth::user();
     $(document).ready(function() {
 
         renderBreadcrumb();
+        centerSponsor();
+        $(window).on('resize', centerSponsor);
 
         // Open a member. Delegated, because the tree markup is replaced.
         $(document).on('click', '#genealogyTree .member-view-box', function(e) {
@@ -1152,20 +1116,109 @@ $user = Auth::user();
             window.open(link, '_blank');
             showNotification('Opening registration page...');
         });
-        // Prevent default pinch zoom on mobile
-        document.addEventListener('gesturestart', function(e) {
-            e.preventDefault();
-        });
-        // Enable smooth touch scrolling
-        $('.genealogy-scroll').on('touchmove', function(e) {
-            e.stopPropagation();
-        });
+        // Press and hold to drag the tree in any direction. A small movement
+        // is treated as a pan, so it does not also open the member underneath.
+        const pan = document.querySelector('.genealogy-scroll');
+        if (pan) {
+            let dragging = false;
+            let moved = false;
+            let startX = 0;
+            let startY = 0;
+            let startLeft = 0;
+            let startTop = 0;
+
+            pan.addEventListener('pointerdown', function(e) {
+                if (e.button !== 0) return;
+                if (e.target.closest('.copy-username, .register-link, .copy-link, button')) return;
+                dragging = true;
+                moved = false;
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = pan.scrollLeft;
+                startTop = pan.scrollTop;
+                pan.classList.add('is-grabbing');
+                pan.setPointerCapture(e.pointerId);
+            });
+
+            pan.addEventListener('pointermove', function(e) {
+                if (!dragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+                pan.scrollLeft = startLeft - dx;
+                pan.scrollTop = startTop - dy;
+            });
+
+            function endPan() {
+                dragging = false;
+                pan.classList.remove('is-grabbing');
+            }
+
+            pan.addEventListener('pointerup', endPan);
+            pan.addEventListener('pointercancel', endPan);
+
+            pan.addEventListener('click', function(e) {
+                if (!moved) return;
+                e.preventDefault();
+                e.stopPropagation();
+                moved = false;
+            }, true);
+        }
     });
     
     
+    function balanceLegs() {
+        const tree = document.getElementById('genealogyTree');
+        if (!tree) return;
+        const lists = Array.from(tree.querySelectorAll('ul'));
+        for (let i = lists.length - 1; i >= 0; i--) {
+            const items = Array.from(lists[i].children).filter(function (el) {
+                return el.tagName === 'LI';
+            });
+            if (items.length < 2) continue;
+            items.forEach(function (li) {
+                li.style.flex = '0 0 auto';
+                li.style.width = 'auto';
+                li.style.minWidth = '';
+                li.style.maxWidth = '';
+            });
+            const widest = Math.ceil(Math.max.apply(null, items.map(function (li) {
+                return li.offsetWidth;
+            })));
+            items.forEach(function (li) {
+                li.style.flex = '0 0 ' + widest + 'px';
+                li.style.width = widest + 'px';
+                li.style.minWidth = widest + 'px';
+                li.style.maxWidth = widest + 'px';
+            });
+        }
+    }
+    function centerSponsor() {
+        balanceLegs();
+        const scroller = document.querySelector('.genealogy-scroll');
+        const root = document.querySelector('#genealogyTree .member-view-box');
+        if (!scroller || !root) return;
+        const place = function() {
+            const sRect = scroller.getBoundingClientRect();
+            const rRect = root.getBoundingClientRect();
+            scroller.scrollLeft += (rRect.left + rRect.width / 2) - (sRect.left + sRect.width / 2);
+            scroller.scrollTop = 0;
+        };
+        place();
+        requestAnimationFrame(place);
+    }
     function updateZoom() {
-        $('.genealogy-tree').css('transform', `scale(${zoomLevel})`);
-        $('.genealogy-scroll').css('overflow', zoomLevel > 1 ? 'auto' : 'auto');
+        const tree = document.getElementById('genealogyTree');
+        if (!tree) return;
+        tree.style.transform = `scale(${zoomLevel})`;
+        tree.style.transformOrigin = 'top center';
+        // Scale does not grow the layout box, so the extra size is added as
+        // margin. Dragging can then reach the whole zoomed tree.
+        const extraW = Math.max(0, tree.offsetWidth * (zoomLevel - 1));
+        const extraH = Math.max(0, tree.offsetHeight * (zoomLevel - 1));
+        tree.style.marginLeft = extraW ? (extraW / 2) + 'px' : '';
+        tree.style.marginRight = extraW ? (extraW / 2) + 'px' : '';
+        tree.style.marginBottom = extraH ? extraH + 'px' : '';
     }
     function showNotification(message) {
         const notification = $('#notification');

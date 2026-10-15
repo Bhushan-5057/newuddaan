@@ -1147,10 +1147,10 @@ Route::post('/admin/check-user', [AdminOrderController::class, 'checkUser'])->na
         return back()->with('success', 'Rank income distribution executed successfully.');
     })->name('admin.command.rank.distribute.income');
 
-    // Auto Withdrawal
+    // Auto Withdrawal opens the pending-withdrawal list. Excel, PDF, and Print
+    // are the buttons already on that page.
 Route::get('/admin/run-auto-withdrawal', function () {
-    Artisan::call('withdrawal:auto');
-    return back()->with('success', 'Auto withdrawal executed successfully.');
+    return redirect()->route('admin.withdrwalstransactionsrequest.index');
 })->name('admin.command.withdrawal.auto');
 
 

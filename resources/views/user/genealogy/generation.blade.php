@@ -102,9 +102,7 @@
                                                 <th>Name</th>
                                             @endif
                                             <th>Username</th>
-                                            @if ($RegistrationType == 'binary')
-                                                <th>Position</th>
-                                            @endif
+                                            <th>Position</th>
                                             <th>Join Date</th>
                                             <th>Status</th>
                                             <th>Level</th>
@@ -136,23 +134,21 @@
                                                     </td>
                                                 @endif
                                                 <td class="text-nowrap">{{ $user->username }}</td>
-                                                @if ($RegistrationType == 'binary')
-                                                    <td>
-                                                        @if ($user->position == 1)
-                                                            <span class="badge bg-info-subtle text-info border border-info-subtle px-2.5 py-1.5">
-                                                                <i class="fas fa-arrow-left me-1"></i> Left
-                                                            </span>
-                                                        @elseif ($user->position == 2)
-                                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1.5">
-                                                                <i class="fas fa-arrow-right me-1"></i> Right
-                                                            </span>
-                                                        @else
-                                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1.5">
-                                                                <i class="fas fa-question-circle me-1"></i> Unknown
-                                                            </span>
-                                                        @endif
-                                                    </td>
-                                                @endif
+                                                <td>
+                                                    @if ($user->position == 1)
+                                                        <span class="badge bg-info-subtle text-info border border-info-subtle px-2.5 py-1.5">
+                                                            <i class="fas fa-arrow-left me-1"></i> Left
+                                                        </span>
+                                                    @elseif ($user->position == 2)
+                                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1.5">
+                                                            <i class="fas fa-arrow-right me-1"></i> Right
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1.5">
+                                                            <i class="fas fa-question-circle me-1"></i> Unknown
+                                                        </span>
+                                                    @endif
+                                                </td>
                                                 <td>
                                                     <div class="d-flex flex-column">
                                                         <span class="fw-medium">{{ $user->created_at->format('Y-m-d') }}</span>
@@ -235,18 +231,16 @@
                                                         </div>
                                                     @endif
 
-                                                    @if ($RegistrationType == 'binary')
-                                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                                            <span class="small text-muted fw-medium">Position:</span>
-                                                            @if ($user->position == 1)
-                                                                <span class="badge bg-info-subtle text-info border border-info-subtle py-1 px-2" style="font-size: 0.75rem;">Left</span>
-                                                            @elseif ($user->position == 2)
-                                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-2" style="font-size: 0.75rem;">Right</span>
-                                                            @else
-                                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.75rem;">Unknown</span>
-                                                            @endif
-                                                        </div>
-                                                    @endif
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="small text-muted fw-medium">Position:</span>
+                                                        @if ($user->position == 1)
+                                                            <span class="badge bg-info-subtle text-info border border-info-subtle py-1 px-2" style="font-size: 0.75rem;">Left</span>
+                                                        @elseif ($user->position == 2)
+                                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-2" style="font-size: 0.75rem;">Right</span>
+                                                        @else
+                                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.75rem;">Unknown</span>
+                                                        @endif
+                                                    </div>
 
                                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                                         <span class="small text-muted fw-medium">Join Date:</span>

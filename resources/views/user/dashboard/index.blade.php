@@ -672,7 +672,7 @@
                     <i class="fa-solid fa-link text-primary me-2"></i> Referral Link
                 </h5>
 
-                @if ($RegistrationType == 'binary' && company_info('binary_status') == 'yes')
+                @if (company_info('binary_status') == 'yes')
                     <form action="{{ route('user.update.default.side') }}" method="POST">
                         @csrf
                         <div class="btn-group" role="group">
@@ -695,7 +695,7 @@
                 <span class="badge bg-success">{{ Auth::user()->username }}</span>
             </div>
 
-            @if ($RegistrationType == 'binary' && company_info('binary_status') == 'no')
+            @if (company_info('binary_status') == 'no')
                 @php
                     $leftLink = url('/register?ref=' . auth()->user()->username . '&side=left');
                     $rightLink = url('/register?ref=' . auth()->user()->username . '&side=right');
@@ -825,7 +825,7 @@
             </div>
         </div>
 
-        @if ($RegistrationType == 'binary' && auth()->user()->hasPermission('Binary Business Summary', 'can_view'))
+        @if (auth()->user()->hasPermission('Binary Business Summary', 'can_view'))
             <div class="col-xl-4">
                 <div class="header-box d-flex justify-content-between align-items-center mb-3">
                     <h5>Business Summary</h5>
@@ -896,7 +896,7 @@
             </div>
         @endif
 
-        @if ($RegistrationType == 'binary' && auth()->user()->hasPermission('Binary Business Summary', 'can_view'))
+        @if (auth()->user()->hasPermission('Binary Business Summary', 'can_view'))
             <div class="col-xl-4">
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-transparent border-0 pb-0 pt-3 d-flex justify-content-between align-items-center">
@@ -972,7 +972,7 @@
             </div>
         @endif
 
-        @if ($RegistrationType == 'binary'  && auth()->user()->hasPermission('Binary Team Activity', 'can_view'))
+        @if (auth()->user()->hasPermission('Left Team', 'can_view') || auth()->user()->hasPermission('Right Team', 'can_view'))
             <div class="col-xl-4">
                 <div class="card shadow-sm border-0 rounded-3 h-100">
                     <div class="card-header border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">

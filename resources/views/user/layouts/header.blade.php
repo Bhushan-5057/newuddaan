@@ -351,52 +351,10 @@
                                     </li>
                                 @endif
 
-                                @if (auth()->user()->hasPermission('Genealogy Team', 'can_view'))
+                                @if (auth()->user()->hasPermission('Genealogy Tree', 'can_view'))
                                     <li>
-                                        <a href="{{ route('user.team.users') }}">
-                                            Team Users
-                                        </a>
-                                    </li>
-                                @endif
-
-                                @if ($RegistrationType == 'binary')
-                                    @if (auth()->user()->hasPermission('Genealogy Tree', 'can_view'))
-                                        <li>
-                                            <a href="{{ route('user.tree.view') }}">
-                                                Binary Tree
-                                            </a>
-                                        </li>
-                                    @endif
-
-                                    @if (auth()->user()->hasPermission('Left Team', 'can_view'))
-                                        <li>
-                                            <a href="{{ route('user.genealogy.left-team') }}">
-                                                Left Team
-                                            </a>
-                                        </li>
-                                    @endif
-
-                                    @if (auth()->user()->hasPermission('Right Team', 'can_view'))
-                                        <li>
-                                            <a href="{{ route('user.genealogy.right-team') }}">
-                                                Right Team
-                                            </a>
-                                        </li>
-                                    @endif
-                                @endif
-
-                                @if (auth()->user()->hasPermission('Matrix', 'can_view'))
-                                    <li>
-                                        <a href="{{ route('user.matrix.tree') }}">
-                                            Matrix
-                                        </a>
-                                    </li>
-                                @endif
-
-                                @if (auth()->user()->hasPermission('Single Leg Team', 'can_view'))
-                                    <li>
-                                        <a href="{{ route('user.singleleg.tree') }}">
-                                            Single Leg
+                                        <a href="{{ route('user.tree.view') }}">
+                                            Binary Tree
                                         </a>
                                     </li>
                                 @endif
