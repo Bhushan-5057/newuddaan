@@ -56,10 +56,10 @@ document.addEventListener('DOMContentLoaded', function () {
   <script src="{{ asset('assets/js/main.js') }}"></script>
   <script src="{{ asset('assets/js/app-user-view-account.js') }}"></script>
   <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
+  @if (request()->routeIs('dashboard.admin'))
   <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
   <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
-    <!-- Main JS -->
-    <script src="{{ asset('assets/js/main.js') }}"></script>
+  @endif
     <!-- Page JS -->
     <script src="{{ asset('assets/js/extended-ui-sweetalert2.js') }}"></script>
   </body>

@@ -504,7 +504,7 @@ public function admingetData(Request $request)
         ];
 
         if (Advance_info('register_name', 'yes') === 'yes') {
-            $rules['name'] = 'required|string|max:255';
+            $rules['name'] = ['required', 'string', 'max:255', 'regex:/^[A-Za-z]+(?: [A-Za-z]+)*$/'];
         }
 
         if (Advance_info('register_wallets', 'no') === 'yes') {
@@ -526,12 +526,12 @@ public function admingetData(Request $request)
         // Registration-form fields. Same rules the public form applies, with
         // the uniqueness checks scoped to ignore this user's own row.
         $rules['title']       = 'nullable|string|max:20';
-        $rules['first_name']  = 'nullable|string|max:255';
-        $rules['last_name']   = 'nullable|string|max:255';
+        $rules['first_name']  = ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'];
+        $rules['last_name']   = ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'];
         $rules['gender']      = 'nullable|in:Male,Female,Other';
         $rules['state']       = 'nullable|string|max:100';
         $rules['city']        = 'nullable|string|max:100';
-        $rules['mobile']      = 'nullable|digits_between:8,15|unique:users,mobile,' . $id;
+        $rules['mobile']      = ['nullable', 'regex:/^[6-9][0-9]{9}$/', 'unique:users,mobile,' . $id];
         $rules['pan']         = ['nullable', 'string', 'size:10', 'regex:/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/', 'unique:users,pan,' . $id];
         $rules['aadhaar']     = ['nullable', 'string', 'min:12', 'max:14', 'regex:/^[0-9\s]+$/', 'unique:users,aadhaar,' . $id];
         $rules['unique_name'] = 'nullable|string|min:2|max:255|unique:users,unique_name,' . $id;

@@ -79,7 +79,13 @@ class PaymentController extends Controller
                     'total_pv' => $totalPV,
                     'order_notes' => $request->order_notes,
                     'carts' => $carts->toArray(),
-                    'delivery_address' => $delivery->address,
+                    'delivery_address' => trim(implode(', ', array_filter([
+                        $delivery->address,
+                        $delivery->city,
+                        $delivery->state,
+                        $delivery->pincode ? ('PIN: ' . $delivery->pincode) : null,
+                        $delivery->country ?? null,
+                    ]))),
                     'contact_no' => $delivery->contact_no,
                 ]
             ]);

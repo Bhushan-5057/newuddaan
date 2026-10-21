@@ -551,21 +551,16 @@ public function shop(Request $request)
 public function delivery_contacts(Request $request)
 {
     $request->validate([
-
         'title'      => 'required|string|max:100',
-
-        'contact_no' => 'required|string|max:20',
-
+        'contact_no' => ['required', 'regex:/^[6-9][0-9]{9}$/'],
         'address'    => 'required|string',
-
         'city'       => 'required|string|max:100',
-
         'state'      => 'required|string|max:100',
-
-        'pincode'    => 'required|string|max:10',
-
+        'pincode'    => ['required', 'digits:6'],
         'email'      => 'nullable|email|max:150',
-
+    ], [
+        'contact_no.regex' => 'Contact number must be a valid 10-digit Indian mobile starting with 6, 7, 8 or 9.',
+        'pincode.digits'   => 'Pincode must be exactly 6 digits.',
     ]);
 
     DeliveryContact::create([
@@ -721,7 +716,14 @@ public function placeOrder(Request $request)
         $order->times = 0;
         $order->roi_bv = 0;
         $order->expire_date = now()->addYears(1);
-        $order->order_address = $delivery->address;
+        // Keep city / state / pincode on the order so the invoice can show them.
+        $order->order_address = trim(implode(', ', array_filter([
+            $delivery->address,
+            $delivery->city,
+            $delivery->state,
+            $delivery->pincode ? ('PIN: ' . $delivery->pincode) : null,
+            $delivery->country ?? null,
+        ])));
         $order->order_details = "Contact: " . $delivery->contact_no . " | Email: " . ($delivery->email ?? 'N/A');
         
         // Store BOGO information in order_notes

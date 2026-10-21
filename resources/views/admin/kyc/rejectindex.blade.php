@@ -231,6 +231,11 @@
                     @else
                         <span class="badge bg-success p-2">Identity Approved</span>
                     @endif
+                    <form action="{{ route('admin.kyc.deleteDocument', $k) }}" method="POST" class="m-0 ms-2"
+                          onsubmit="return confirm('Delete identity documents? The member can upload again.');">
+                        @csrf <input type="hidden" name="section" value="identity">
+                        <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bx bx-trash"></i> Delete</button>
+                    </form>
                 </div>
 
                 {{-- 2. PAN ACTIONS --}}
@@ -254,6 +259,11 @@
                     @else
                         <span class="badge bg-success p-2">PAN Approved</span>
                     @endif
+                    <form action="{{ route('admin.kyc.deleteDocument', $k) }}" method="POST" class="m-0 ms-2"
+                          onsubmit="return confirm('Delete PAN documents? The member can upload again.');">
+                        @csrf <input type="hidden" name="section" value="pan">
+                        <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bx bx-trash"></i> Delete</button>
+                    </form>
                 </div>
 
                 {{-- 3. BANK ACTIONS --}}
@@ -277,6 +287,11 @@
                     @else
                         <span class="badge bg-success p-2">Bank Approved</span>
                     @endif
+                    <form action="{{ route('admin.kyc.deleteDocument', $k) }}" method="POST" class="m-0 ms-2"
+                          onsubmit="return confirm('Delete bank documents? The member can upload again.');">
+                        @csrf <input type="hidden" name="section" value="bank">
+                        <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bx bx-trash"></i> Delete</button>
+                    </form>
                 </div>
                 
             </div>

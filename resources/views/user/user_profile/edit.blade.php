@@ -60,7 +60,10 @@
                         <div class="row">
                             <div class="mb-3 col-md-6">
                                 <label class="form-label">Name <span class="text-danger">*</span></label>
-                                <input type="text" name="name" value="{{ old('name', $user->name) }}" class="form-control" required>
+                                <input type="text" name="name" value="{{ old('name', $user->name) }}"
+                                       class="form-control js-name-words" required
+                                       pattern="[A-Za-z]+( [A-Za-z]+)*"
+                                       title="Letters only (no numbers)">
                                 @error('name')
                                 <small class="text-danger">{{ $message }}</small>
                                 @enderror
@@ -427,6 +430,27 @@
             
             confirmPassword.addEventListener('keyup', validateConfirm);
         }
+    });
+
+    // ==========================================================
+    // Name / mobile input filters (letters vs digits)
+    // ==========================================================
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.js-name-alpha').forEach(function (el) {
+            el.addEventListener('input', function () {
+                this.value = this.value.replace(/[^A-Za-z]/g, '');
+            });
+        });
+        document.querySelectorAll('.js-name-words').forEach(function (el) {
+            el.addEventListener('input', function () {
+                this.value = this.value.replace(/[^A-Za-z ]+/g, '').replace(/ {2,}/g, ' ');
+            });
+        });
+        document.querySelectorAll('.js-indian-mobile, .js-digits-only').forEach(function (el) {
+            el.addEventListener('input', function () {
+                this.value = this.value.replace(/\D/g, '');
+            });
+        });
     });
 
     // ==========================================================

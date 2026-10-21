@@ -577,9 +577,12 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Contact Number</label>
-                                    <input class="form-control" type="tel" name="contact_no"
-                                           pattern="[0-9]{10}" maxlength="10" minlength="10"
-                                           placeholder="Enter mobile number" required>
+                                    <input class="form-control" type="tel" name="contact_no" id="checkout_contact_no"
+                                           pattern="[6-9][0-9]{9}" maxlength="10" minlength="10"
+                                           inputmode="numeric"
+                                           title="10-digit Indian mobile starting with 6, 7, 8 or 9"
+                                           placeholder="Enter 10-digit Indian mobile" required>
+                                    <small class="text-muted">Indian mobile only (starts with 6–9)</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -592,8 +595,9 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Pincode</label>
-                                    <input class="form-control" type="text" name="pincode"
-                                           maxlength="6" minlength="6" placeholder="Enter pincode" required>
+                                    <input class="form-control" type="text" name="pincode" id="checkout_pincode"
+                                           pattern="[0-9]{6}" maxlength="6" minlength="6"
+                                           inputmode="numeric" placeholder="Enter 6-digit pincode" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -630,9 +634,24 @@
 
     <script>
         $(document).ready(function() {
+            // Digits only for contact + pincode; block letters in contact.
+            $('#checkout_contact_no, #checkout_pincode').on('input', function () {
+                this.value = this.value.replace(/\D/g, '');
+            });
+
             // Address form submission via AJAX
             $('#address-form').on('submit', function(e) {
                 e.preventDefault();
+                var contact = ($('#checkout_contact_no').val() || '').trim();
+                if (!/^[6-9][0-9]{9}$/.test(contact)) {
+                    alert('Contact number must be a valid 10-digit Indian mobile starting with 6, 7, 8 or 9.');
+                    return;
+                }
+                var pin = ($('#checkout_pincode').val() || '').trim();
+                if (!/^[0-9]{6}$/.test(pin)) {
+                    alert('Pincode must be exactly 6 digits.');
+                    return;
+                }
                 $.ajax({
                     url: $(this).attr('action'),
                     type: 'POST',

@@ -681,6 +681,7 @@ Route::get('/royalty-report',[RankController::class,'royaltyReport'])->name('adm
         Route::get('/rejected', [AdminKycController::class, 'rejectindex'])->name('rejectindex');
         Route::post('/{kycDetail}/approve', [AdminKycController::class, 'approve'])->name('approve');
         Route::post('/{kycDetail}/reject', [AdminKycController::class, 'reject'])->name('reject');
+        Route::post('/{kycDetail}/delete-document', [AdminKycController::class, 'deleteDocument'])->name('deleteDocument');
     });
 
     
@@ -1129,22 +1130,36 @@ Route::post('/admin/check-user', [AdminOrderController::class, 'checkUser'])->na
     Route::put('admin/advance-info/update/{id}', [AdminAdvanceInfoController::class, 'update'])->name('admin.advance-info.update');
     // matching Calculation
 
-    // Binary Matching Closing
+    // Binary Matching Closing → run cron, then open Manual Matching page
+    // (same pattern as Auto Withdrawal opening its list instead of back()).
     Route::get('/admin/run-matching-closing', function () {
-        Artisan::call('matching:closing');
-        return back()->with('success', 'Binary matching closing executed successfully.');
+        try {
+            Artisan::call('matching:closing');
+            return redirect()->route('admin.matching.index')
+                ->with('success', 'Binary matching closing executed successfully.');
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.matching.index')
+                ->with('error', 'Binary matching failed: ' . $e->getMessage());
+        }
     })->name('admin.command.matching.closing');
 
-    // Monthly Rank Achievement Closing
+    // Rank Achievement Closing → run cron, then open Rank Achievers report
     Route::get('/admin/run-rank-closing', function () {
-        Artisan::call('rank:closing');
-        return back()->with('success', 'Monthly rank closing executed successfully.');
+        try {
+            Artisan::call('rank:closing');
+            return redirect()->route('admin.rank')
+                ->with('success', 'Rank achievement closing executed successfully.');
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.rank')
+                ->with('error', 'Rank closing failed: ' . $e->getMessage());
+        }
     })->name('admin.command.rank.closing');
 
     // Rank Income Distribution (2% CTO)
     Route::get('/admin/run-rank-distribute', function () {
         Artisan::call('rank:distribute-income');
-        return back()->with('success', 'Rank income distribution executed successfully.');
+        return redirect()->route('admin.rank')
+            ->with('success', 'Rank income distribution executed successfully.');
     })->name('admin.command.rank.distribute.income');
 
     // Auto Withdrawal opens the pending-withdrawal list. Excel, PDF, and Print
@@ -1154,10 +1169,16 @@ Route::get('/admin/run-auto-withdrawal', function () {
 })->name('admin.command.withdrawal.auto');
 
 
-// Monthly Hold Income Release
+// Royalty Income → run cron, then open Royalty Achievers report
 Route::get('/admin/run-monthly-income-release', function () {
-    Artisan::call('royalty:income');
-    return back()->with('success', 'Monthly hold income release executed successfully.');
+    try {
+        Artisan::call('royalty:income');
+        return redirect()->route('admin.royalty.report')
+            ->with('success', 'Royalty income release executed successfully.');
+    } catch (\Throwable $e) {
+        return redirect()->route('admin.royalty.report')
+            ->with('error', 'Royalty income failed: ' . $e->getMessage());
+    }
 })->name('admin.command.monthly.income.release');
 
 

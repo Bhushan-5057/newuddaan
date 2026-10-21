@@ -150,8 +150,8 @@
                             <p class="mb-2"><strong>Full Name:</strong> {{ $k->first_name ?? 'N/A' }} {{ $k->last_name ?? '' }}</p>
                             <p class="mb-2"><strong>Date of Birth:</strong> {{ $k->dob ?? 'N/A' }}</p>
                             <p class="mb-2"><strong>Gender:</strong> {{ ucfirst($k->gender ?? 'N/A') }}</p>
-                            @if ($k->kyc_status_personal == 'rejected')
-                                <div class="alert alert-sm alert-danger p-2 mt-2"><small><strong>Reason:</strong> {{ $k->personal_remark }}</small></div>
+                            @if (!empty($k->personal_remark))
+                                <div class="alert alert-sm {{ $k->kyc_status_personal == 'rejected' ? 'alert-danger' : 'alert-warning' }} p-2 mt-2"><small><strong>Note:</strong> {{ $k->personal_remark }}</small></div>
                             @endif
                         </div>
                     </div>
@@ -160,7 +160,7 @@
                     <div class="col-md-6">
                         <div class="p-2 rounded bg-light mb-3 d-flex justify-content-between align-items-center">
                             <h5 class="fw-bold text-info mb-0">2. Identity Verification 🆔</h5>
-                            <span class="badge {{ $k->kyc_status_identity == 'approved' ? 'bg-success' : ($k->kyc_status_identity == 'rejected' ? 'bg-danger' : 'bg-primary') }}">{{ ucfirst($k->kyc_status_identity ?? 'pending') }}</span>
+                            <span class="badge {{ $k->kyc_status_identity == 'approved' ? 'bg-success' : ($k->kyc_status_identity == 'rejected' ? 'bg-danger' : ($k->kyc_status_identity == 'pending' ? 'bg-secondary' : 'bg-primary')) }}">{{ ucfirst($k->kyc_status_identity ?? 'pending') }}</span>
                         </div>
                         <div class="ps-2">
                             <p class="mb-3"><strong>Aadhaar Number:</strong> <span class="bg-white px-2 py-1 border rounded text-dark fs-6 font-monospace">[Aadhaar Redacted]</span></p>
@@ -173,7 +173,7 @@
                                         <img src="{{ asset('storage/'.$k->front_image) }}" class="img-fluid rounded border shadow-sm zoom-image" style="max-height: 110px; object-fit: contain;">
                                     </a>
                                     @else
-                                    <span class="text-danger border rounded d-block p-3 bg-white"><small>Not Uploaded</small></span>
+                                    <span class="text-danger border rounded d-block p-3 bg-white"><small>Not Uploaded / Deleted</small></span>
                                     @endif
                                 </div>
                                 <div class="col-6">
@@ -183,12 +183,12 @@
                                         <img src="{{ asset('storage/'.$k->back_image) }}" class="img-fluid rounded border shadow-sm zoom-image" style="max-height: 110px; object-fit: contain;">
                                     </a>
                                     @else
-                                    <span class="text-danger border rounded d-block p-3 bg-white"><small>Not Uploaded</small></span>
+                                    <span class="text-danger border rounded d-block p-3 bg-white"><small>Not Uploaded / Deleted</small></span>
                                     @endif
                                 </div>
                             </div>
-                            @if ($k->kyc_status_identity == 'rejected')
-                                <div class="alert alert-sm alert-danger p-2"><small><strong>Reason:</strong> {{ $k->identity_remark ?? $k->kyc_remark }}</small></div>
+                            @if (!empty($k->identity_remark) || !empty($k->kyc_remark))
+                                <div class="alert alert-sm {{ $k->kyc_status_identity == 'rejected' ? 'alert-danger' : 'alert-warning' }} p-2"><small><strong>Note:</strong> {{ $k->identity_remark ?? $k->kyc_remark }}</small></div>
                             @endif
                         </div>
                     </div>
@@ -199,7 +199,7 @@
                     <div class="col-md-6 border-end">
                         <div class="p-2 rounded bg-light mb-3 d-flex justify-content-between align-items-center">
                             <h5 class="fw-bold text-warning mb-0">3. PAN Card Data 💳</h5>
-                            <span class="badge {{ $k->kyc_status_pan == 'approved' ? 'bg-success' : ($k->kyc_status_pan == 'rejected' ? 'bg-danger' : 'bg-primary') }}">{{ ucfirst($k->kyc_status_pan ?? 'pending') }}</span>
+                            <span class="badge {{ $k->kyc_status_pan == 'approved' ? 'bg-success' : ($k->kyc_status_pan == 'rejected' ? 'bg-danger' : ($k->kyc_status_pan == 'pending' ? 'bg-secondary' : 'bg-primary')) }}">{{ ucfirst($k->kyc_status_pan ?? 'pending') }}</span>
                         </div>
                         <div class="ps-2">
                             <p class="mb-3"><strong>PAN Number:</strong> <span class="bg-white px-2 py-1 border rounded font-monospace fw-bold">{{ $k->pan_no ?? 'N/A' }}</span></p>
@@ -210,11 +210,11 @@
                                     <img src="{{ asset('storage/'.$k->front_image_pan) }}" class="img-fluid rounded border shadow-sm zoom-image" style="max-height: 110px; object-fit: contain;">
                                 </a>
                                 @else
-                                <span class="text-danger border rounded d-inline-block p-3 bg-white w-50"><small>Not Uploaded</small></span>
+                                <span class="text-danger border rounded d-inline-block p-3 bg-white w-50"><small>Not Uploaded / Deleted</small></span>
                                 @endif
                             </div>
-                            @if ($k->kyc_status_pan == 'rejected')
-                                <div class="alert alert-sm alert-danger p-2"><small><strong>Reason:</strong> {{ $k->pan_remark }}</small></div>
+                            @if (!empty($k->pan_remark))
+                                <div class="alert alert-sm {{ $k->kyc_status_pan == 'rejected' ? 'alert-danger' : 'alert-warning' }} p-2"><small><strong>Note:</strong> {{ $k->pan_remark }}</small></div>
                             @endif
                         </div>
                     </div>
@@ -223,7 +223,7 @@
                     <div class="col-md-6">
                         <div class="p-2 rounded bg-light mb-3 d-flex justify-content-between align-items-center">
                             <h5 class="fw-bold text-success mb-0">4. Bank Account Info 🏦</h5>
-                            <span class="badge {{ $k->kyc_status_bank == 'approved' ? 'bg-success' : ($k->kyc_status_bank == 'rejected' ? 'bg-danger' : 'bg-primary') }}">{{ ucfirst($k->kyc_status_bank ?? 'pending') }}</span>
+                            <span class="badge {{ $k->kyc_status_bank == 'approved' ? 'bg-success' : ($k->kyc_status_bank == 'rejected' ? 'bg-danger' : ($k->kyc_status_bank == 'pending' ? 'bg-secondary' : 'bg-primary')) }}">{{ ucfirst($k->kyc_status_bank ?? 'pending') }}</span>
                         </div>
                         <div class="ps-2">
                             <div class="row g-2 mb-2">
@@ -238,8 +238,11 @@
                                     <p class="mb-1"><small class="text-muted d-block">Branch / City</small><strong>{{ $k->bank_branch ?? 'N/A' }}</strong></p>
                                 </div>
                             </div>
-                            @if ($k->kyc_status_bank == 'rejected')
-                                <div class="alert alert-sm alert-danger p-2"><small><strong>Reason:</strong> {{ $k->bank_remark }}</small></div>
+                            @if(!$k->front_image_bank)
+                                <span class="text-danger border rounded d-inline-block p-2 bg-white mb-2"><small>Bank document: Not Uploaded / Deleted</small></span>
+                            @endif
+                            @if (!empty($k->bank_remark))
+                                <div class="alert alert-sm {{ $k->kyc_status_bank == 'rejected' ? 'alert-danger' : 'alert-warning' }} p-2"><small><strong>Note:</strong> {{ $k->bank_remark }}</small></div>
                             @endif
                         </div>
                     </div>
@@ -271,6 +274,11 @@
                         @else
                             <span class="badge {{ $k->kyc_status_personal == 'approved' ? 'bg-success' : 'bg-danger' }}">{{ ucfirst($k->kyc_status_personal ?? 'No Request') }}</span>
                         @endif
+                        <form action="{{ route('admin.kyc.deleteDocument', $k) }}" method="POST" class="mt-2 m-0"
+                              onsubmit="return confirm('Delete personal documents? The member can upload again.');">
+                            @csrf <input type="hidden" name="section" value="personal">
+                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bx bx-trash"></i> Delete Docs</button>
+                        </form>
                     </div>
 
                     {{-- Identity Action Block --}}
@@ -291,6 +299,11 @@
                         @else
                             <span class="badge {{ $k->kyc_status_identity == 'approved' ? 'bg-success' : 'bg-danger' }}">{{ ucfirst($k->kyc_status_identity ?? 'No Request') }}</span>
                         @endif
+                        <form action="{{ route('admin.kyc.deleteDocument', $k) }}" method="POST" class="mt-2 m-0"
+                              onsubmit="return confirm('Delete identity documents? The member can upload again.');">
+                            @csrf <input type="hidden" name="section" value="identity">
+                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bx bx-trash"></i> Delete Docs</button>
+                        </form>
                     </div>
                 </div>
 
@@ -315,6 +328,11 @@
                         @else
                             <span class="badge {{ $k->kyc_status_pan == 'approved' ? 'bg-success' : 'bg-danger' }}">{{ ucfirst($k->kyc_status_pan ?? 'No Request') }}</span>
                         @endif
+                        <form action="{{ route('admin.kyc.deleteDocument', $k) }}" method="POST" class="mt-2 m-0"
+                              onsubmit="return confirm('Delete PAN documents? The member can upload again.');">
+                            @csrf <input type="hidden" name="section" value="pan">
+                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bx bx-trash"></i> Delete Docs</button>
+                        </form>
                     </div>
 
                     {{-- Bank Action Block --}}
@@ -335,6 +353,11 @@
                         @else
                             <span class="badge {{ $k->kyc_status_bank == 'approved' ? 'bg-success' : 'bg-danger' }}">{{ ucfirst($k->kyc_status_bank ?? 'No Request') }}</span>
                         @endif
+                        <form action="{{ route('admin.kyc.deleteDocument', $k) }}" method="POST" class="mt-2 m-0"
+                              onsubmit="return confirm('Delete bank documents? The member can upload again.');">
+                            @csrf <input type="hidden" name="section" value="bank">
+                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bx bx-trash"></i> Delete Docs</button>
+                        </form>
                     </div>
                 </div>
 

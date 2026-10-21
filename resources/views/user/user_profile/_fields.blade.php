@@ -38,7 +38,8 @@
     <div class="mb-3 col-md-4">
         <label class="form-label" for="first_name">First Name</label>
         <input type="text" id="first_name" name="first_name"
-               class="form-control @error('first_name') is-invalid @enderror"
+               class="form-control js-name-alpha @error('first_name') is-invalid @enderror"
+               pattern="[A-Za-z]+" title="Letters only, no spaces or numbers"
                value="{{ $val('first_name') }}">
         @error('first_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
@@ -46,7 +47,8 @@
     <div class="mb-3 col-md-3">
         <label class="form-label" for="middle_name">Middle Name</label>
         <input type="text" id="middle_name" name="middle_name"
-               class="form-control @error('middle_name') is-invalid @enderror"
+               class="form-control js-name-alpha @error('middle_name') is-invalid @enderror"
+               pattern="[A-Za-z]+" title="Letters only, no spaces or numbers"
                value="{{ $val('middle_name') }}">
         @error('middle_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
@@ -54,7 +56,8 @@
     <div class="mb-3 col-md-3">
         <label class="form-label" for="last_name">Last Name</label>
         <input type="text" id="last_name" name="last_name"
-               class="form-control @error('last_name') is-invalid @enderror"
+               class="form-control js-name-alpha @error('last_name') is-invalid @enderror"
+               pattern="[A-Za-z]+" title="Letters only, no spaces or numbers"
                value="{{ $val('last_name') }}">
         @error('last_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
@@ -115,7 +118,9 @@
     <div class="mb-3 col-md-4">
         <label class="form-label" for="alternate_mobile">Alternate Mobile</label>
         <input type="text" id="alternate_mobile" name="alternate_mobile" inputmode="numeric"
-               class="form-control @error('alternate_mobile') is-invalid @enderror"
+               class="form-control js-indian-mobile @error('alternate_mobile') is-invalid @enderror"
+               pattern="[6-9][0-9]{9}" maxlength="10" minlength="10"
+               title="10-digit Indian mobile starting with 6, 7, 8 or 9"
                value="{{ $val('alternate_mobile') }}">
         @error('alternate_mobile')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
@@ -127,7 +132,8 @@
                    class="form-control @error('std_code') is-invalid @enderror"
                    value="{{ $val('std_code') }}" placeholder="STD">
             <input type="text" name="phone_number" inputmode="numeric"
-                   class="form-control @error('phone_number') is-invalid @enderror"
+                   class="form-control js-digits-only @error('phone_number') is-invalid @enderror"
+                   pattern="[0-9]{5,15}" maxlength="15"
                    value="{{ $val('phone_number') }}" placeholder="Phone Number">
         </div>
         @error('std_code')<div class="text-danger small">{{ $message }}</div>@enderror
@@ -203,7 +209,8 @@
     <div class="mb-3 col-md-4">
         <label class="form-label" for="nominee_first_name">First Name</label>
         <input type="text" id="nominee_first_name" name="nominee_first_name"
-               class="form-control @error('nominee_first_name') is-invalid @enderror"
+               class="form-control js-name-alpha @error('nominee_first_name') is-invalid @enderror"
+               pattern="[A-Za-z]+" title="Letters only, no spaces or numbers"
                value="{{ $val('nominee_first_name') }}">
         @error('nominee_first_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
@@ -211,13 +218,17 @@
     <div class="mb-3 col-md-3">
         <label class="form-label" for="nominee_middle_name">Middle Name</label>
         <input type="text" id="nominee_middle_name" name="nominee_middle_name"
-               class="form-control" value="{{ $val('nominee_middle_name') }}">
+               class="form-control js-name-alpha" pattern="[A-Za-z]+"
+               title="Letters only, no spaces or numbers"
+               value="{{ $val('nominee_middle_name') }}">
     </div>
 
     <div class="mb-3 col-md-3">
         <label class="form-label" for="nominee_last_name">Last Name</label>
         <input type="text" id="nominee_last_name" name="nominee_last_name"
-               class="form-control" value="{{ $val('nominee_last_name') }}">
+               class="form-control js-name-alpha" pattern="[A-Za-z]+"
+               title="Letters only, no spaces or numbers"
+               value="{{ $val('nominee_last_name') }}">
     </div>
 
     <div class="mb-3 col-md-4">
@@ -242,7 +253,8 @@
     <div class="mb-3 col-md-4">
         <label class="form-label" for="nominee_relation">Relation with Applicant</label>
         <input type="text" id="nominee_relation" name="nominee_relation"
-               class="form-control @error('nominee_relation') is-invalid @enderror"
+               class="form-control js-name-words @error('nominee_relation') is-invalid @enderror"
+               pattern="[A-Za-z]+( [A-Za-z]+)*" title="Letters only, no numbers"
                value="{{ $val('nominee_relation') }}" placeholder="e.g. Wife, Son, Father">
         @error('nominee_relation')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
@@ -258,7 +270,9 @@
     <div class="mb-3 col-md-6">
         <label class="form-label" for="nominee_mobile">Mobile</label>
         <input type="text" id="nominee_mobile" name="nominee_mobile" inputmode="numeric"
-               class="form-control @error('nominee_mobile') is-invalid @enderror"
+               class="form-control js-indian-mobile @error('nominee_mobile') is-invalid @enderror"
+               pattern="[6-9][0-9]{9}" maxlength="10" minlength="10"
+               title="10-digit Indian mobile starting with 6, 7, 8 or 9"
                value="{{ $val('nominee_mobile') }}">
         @error('nominee_mobile')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>

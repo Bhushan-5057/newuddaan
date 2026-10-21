@@ -46,7 +46,8 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         $rules = [
-            'name' => 'required|string|max:255',
+            // Letters only (optional single spaces between words); no digits.
+            'name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z]+(?: [A-Za-z]+)*$/'],
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'unique_name' => 'nullable|string|min:2|max:255|unique:users,unique_name,' . $user->id,
@@ -56,9 +57,10 @@ class ProfileController extends Controller
             // is only changed by an admin. PAN, Aadhaar and the bank
             // block are not here either - they belong to KYC.
             'title' => 'nullable|string|max:20',
-            'first_name' => 'nullable|string|max:255',
-            'middle_name' => 'nullable|string|max:255',
-            'last_name' => 'nullable|string|max:255',
+            // Name parts: letters only, no digits, no blank spaces.
+            'first_name' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'],
+            'middle_name' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'],
+            'last_name' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'],
             'gender' => 'nullable|in:Male,Female,Other',
             'date_of_birth' => 'nullable|date|before:today',
             'marriage_anniversary' => 'nullable|date|before_or_equal:today',
@@ -73,21 +75,36 @@ class ProfileController extends Controller
             'city' => 'nullable|string|max:100',
             'pin_code' => 'nullable|digits_between:4,10',
 
-            // --- Extra contact numbers ---
-            'alternate_mobile' => 'nullable|digits_between:8,15',
+            // --- Extra contact numbers (digits only; Indian 10-digit mobile) ---
+            'alternate_mobile' => ['nullable', 'regex:/^[6-9][0-9]{9}$/'],
             'std_code' => 'nullable|digits_between:2,6',
             'phone_number' => 'nullable|digits_between:5,15',
 
             // --- Nominee ---
             'nominee_title' => 'nullable|string|max:20',
-            'nominee_first_name' => 'nullable|string|max:255',
-            'nominee_middle_name' => 'nullable|string|max:255',
-            'nominee_last_name' => 'nullable|string|max:255',
+            'nominee_first_name' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'],
+            'nominee_middle_name' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'],
+            'nominee_last_name' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'],
             'nominee_gender' => 'nullable|in:Male,Female,Other',
             'nominee_email' => 'nullable|email|max:255',
-            'nominee_mobile' => 'nullable|digits_between:8,15',
+            'nominee_mobile' => ['nullable', 'regex:/^[6-9][0-9]{9}$/'],
             'nominee_dob' => 'nullable|date|before:today',
-            'nominee_relation' => 'nullable|string|max:100',
+            'nominee_relation' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z]+(?: [A-Za-z]+)*$/'],
+        ];
+
+        $messages = [
+            'name.regex' => 'Name may contain letters only (no numbers).',
+            'first_name.regex' => 'First name may contain letters only, without spaces or numbers.',
+            'middle_name.regex' => 'Middle name may contain letters only, without spaces or numbers.',
+            'last_name.regex' => 'Last name may contain letters only, without spaces or numbers.',
+            'nominee_first_name.regex' => 'Nominee first name may contain letters only, without spaces or numbers.',
+            'nominee_middle_name.regex' => 'Nominee middle name may contain letters only, without spaces or numbers.',
+            'nominee_last_name.regex' => 'Nominee last name may contain letters only, without spaces or numbers.',
+            'nominee_relation.regex' => 'Relation may contain letters only (no numbers).',
+            'alternate_mobile.regex' => 'Alternate mobile must be a valid 10-digit Indian number starting with 6, 7, 8 or 9.',
+            'nominee_mobile.regex' => 'Nominee mobile must be a valid 10-digit Indian number starting with 6, 7, 8 or 9.',
+            'phone_number.digits_between' => 'Phone number may contain digits only.',
+            'std_code.digits_between' => 'STD code may contain digits only.',
         ];
 
         $customFields = CustomField::where('module_name', 'register')
@@ -98,7 +115,7 @@ class ProfileController extends Controller
             $rules["custom.{$field->id}"] = $field->required ? 'required' : 'nullable';
         }
 
-        $data = $request->validate($rules);
+        $data = $request->validate($rules, $messages);
 
         // Profile image
         if ($request->hasFile('profile_image')) {

@@ -92,20 +92,26 @@
 <!-- Glight js -->
 <script src="{{ asset('user/assets/vendor/glightbox/glightbox.min.js') }}"></script>
 
-<!-- apexcharts-->
+{{-- Minimal helpers for script.js — avoid loading full customizer.js (404 on customizer.txt) --}}
+<script>
+function getLocalStorageItem(key, defaultValue) {
+    try {
+        var v = localStorage.getItem('ki-admin-' + key);
+        return v !== null && v !== undefined ? v : (defaultValue !== undefined ? defaultValue : null);
+    } catch (e) {
+        return defaultValue !== undefined ? defaultValue : null;
+    }
+}
+function setLocalStorageItem(key, value) {
+    try { localStorage.setItem('ki-admin-' + key, value); } catch (e) {}
+}
+</script>
+{{-- Dashboard-only chart / customizer scripts --}}
+@if (request()->routeIs('dashboard.user'))
 <script src="{{ asset('user/assets/vendor/apexcharts/apexcharts.min.js') }}"></script>
-
-<!-- Customizer js-->
 <script src="{{ asset('user/assets/js/customizer.js') }}"></script>
-
-<!-- Ecommerce js-->
 <script src="{{ asset('user/assets/js/ecommerce_dashboard.js') }}"></script>
-
-
-
-
-
-
+@endif
 
 <!-- Custom JS (check path) -->
 
@@ -113,9 +119,7 @@
 
 <script src="{{ asset('assets/js/extended-ui-sweetalert2.js') }}"></script>
 
-
-
-<script src="{{ asset('assets/js/main.js') }}"></script>
+{{-- main.js needs window.Helpers from helpers.js (admin header only) — skip on user layout --}}
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

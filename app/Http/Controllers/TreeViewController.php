@@ -102,10 +102,8 @@ public function showTree()
 }
 
 /**
- * Re-root the tree at one downline member.
- *
- * Returns the rendered subtree plus the path from the viewer down to it, so
- * the page can swap the tree out and rebuild the breadcrumb without a reload.
+ * In-place expand: open N levels under the clicked member (default 3).
+ * Sponsor and upper members stay on screen; HTML is inserted under the click.
  */
 public function fetchSubTree(Request $request)
 {
@@ -129,28 +127,30 @@ public function fetchSubTree(Request $request)
         return response()->json(['message' => 'Member not found.'], 404);
     }
 
-    $levels = (int) config('tree.drilldown_levels', 3);
-    [$treeNodes, $treeBv, $treeChildren] = $this->visibleTreeData($target, $levels);
+    // Three levels under the clicked member, on that member's side only.
+    // Click left → follow position 1 only; click right → position 2 only.
+    // The other side still renders as Null/Register in the partial.
+    $maxLevel = max(1, (int) config('tree.drilldown_levels', 3));
+    $side = (int) $request->query('side');
+    $onlyPosition = in_array($side, [1, 2], true) ? $side : null;
+    [$treeNodes, $treeBv, $treeChildren] = $this->visibleTreeData($target, $maxLevel, $onlyPosition);
 
-    $html = view('user.tree.partials.user_node', [
-        'user' => $target,
-        'level' => 0,
-        'treeMaxLevel' => $levels,
+    $html = view('user.tree.partials.user_children', [
+        'parent' => $target,
         'treeNodes' => $treeNodes,
         'treeBv' => $treeBv,
         'treeChildren' => $treeChildren,
+        'treeMaxLevel' => $maxLevel,
+        'onlyPosition' => $onlyPosition,
     ])->render();
 
     return response()->json([
         'html' => $html,
-        'path' => TreeHelper::pathBetween((int) $viewer->id, $targetId),
         'root' => [
             'id' => $target->id,
             'username' => $target->username,
             'name' => $target->name,
         ],
-        // A binary slot holds one node; if bad data put two members on the same
-        // side, say so rather than quietly dropping one.
         'hidden' => array_map(fn ($d) => $d['skipped_username'], $this->duplicatePlacements),
     ]);
 }
@@ -162,11 +162,12 @@ public function fetchSubTree(Request $request)
  * @return array{0: array<int, \App\Models\User>, 1: array<string, float>}
  *               [id => user, tx_user_id => total BV]
  */
-private function visibleTreeData(User $root, int $maxLevel): array
+private function visibleTreeData(User $root, int $maxLevel, ?int $onlyPosition = null): array
 {
     $nodes = [$root->id => $root];
     $childMap = [];          // [parentId][1|2] => childId
     $frontier = [$root->id];
+    $positions = $onlyPosition ? [$onlyPosition] : [1, 2];
 
     for ($level = 0; $level < $maxLevel; $level++) {
         if (empty($frontier)) {
@@ -176,8 +177,10 @@ private function visibleTreeData(User $root, int $maxLevel): array
         // Children come from parent_id + position, the same placement the
         // binary-matching income uses. The old walk followed left_id/right_id,
         // denormalised columns that can drift out of step with it.
+        // When $onlyPosition is set (left- or right-leg drill-down), only that
+        // side of each node is loaded.
         $children = User::whereIn('parent_id', $frontier)
-            ->whereIn('position', [1, 2])
+            ->whereIn('position', $positions)
             ->orderBy('id')
             ->get();
 

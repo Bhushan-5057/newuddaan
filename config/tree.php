@@ -15,16 +15,18 @@ return [
     |
     */
 
-    'render_levels' => env('TREE_RENDER_LEVELS', 3),
+    // Sponsor opens with immediate left + right only. Deeper members appear
+    // only after that member is clicked (see drilldown_levels).
+    'render_levels' => env('TREE_RENDER_LEVELS', 1),
 
     /*
     |--------------------------------------------------------------------------
     | Drill-down depth
     |--------------------------------------------------------------------------
     |
-    | Clicking a node re-roots the tree on that member. This is how many levels
-    | below them are drawn. Kept separate from render_levels so the first view
-    | can show a little more than each subsequent hop.
+    | Clicking a left/right member opens this many levels under them in place
+    | (sponsor and upper members stay visible). Default 3 matches the genealogy
+    | “open three levels on one click” behaviour.
     |
     */
 

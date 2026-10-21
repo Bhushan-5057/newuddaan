@@ -111,6 +111,8 @@ class UserKycController extends Controller
             'front_image' => $frontImagePath,
             'back_image' => $backImagePath,
             'kyc_status_identity' => 'submitted',
+            'kyc_remark' => null,
+            'identity_remark' => null,
         ]);
 
         return redirect()->back()->with('success', 'Identity details submitted successfully.')->with('active_tab', 'tab-2');
@@ -149,6 +151,7 @@ class UserKycController extends Controller
             'pan_no' => $request->pan_no,
             'front_image_pan' => $frontImagePanPath,
             'kyc_status_pan' => 'submitted',
+            'pan_remark' => null,
         ]);
 
         return redirect()->back()->with('success', 'PAN details submitted successfully.')->with('active_tab', 'tab-3');
@@ -195,6 +198,7 @@ class UserKycController extends Controller
             'bank_branch' => $request->bank_branch,
             'front_image_bank' => $frontImageBankPath,
             'kyc_status_bank' => 'submitted',
+            'bank_remark' => null,
         ]);
 
         return redirect()->back()->with('success', 'Bank details submitted successfully.')->with('active_tab', 'tab-4');

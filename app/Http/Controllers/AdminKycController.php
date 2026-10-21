@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\KycDetail;
 
 class AdminKycController extends Controller
@@ -52,11 +53,24 @@ class AdminKycController extends Controller
     
     /**
      * Approved KYC List
-     * બધા જ સેક્શન 'approved' હોવા જોઈએ
+     *
+     * Fully approved rows, plus members who still have at least one approved
+     * section after admin deleted a document (that section is pending again).
+     * Submitted / rejected sections stay on the Pending / Rejected tabs.
      */
     public function approvedindex(Request $request)
     {
-        $query = KycDetail::with('user')->whereAllSections('approved');
+        $query = KycDetail::with('user')
+            ->whereAnySection('approved')
+            ->where(function ($q) {
+                foreach (KycDetail::ACTIVE_SECTIONS as $section) {
+                    $q->where(function ($s) use ($section) {
+                        $s->where("kyc_status_{$section}", 'approved')
+                            ->orWhere("kyc_status_{$section}", 'pending')
+                            ->orWhereNull("kyc_status_{$section}");
+                    });
+                }
+            });
 
         // ફિલ્ટર એપ્લાય કરો
         $query = $this->applyFilters($request, $query);
@@ -124,5 +138,84 @@ class AdminKycController extends Controller
         ]);
 
         return redirect()->back()->with('success', ucfirst($section) . ' section rejected successfully.');
+    }
+
+    /**
+     * Delete one KYC document section (files + DB fields) so the member can
+     * upload that section again. Mirrors approve/reject section handling.
+     */
+    public function deleteDocument(Request $request, KycDetail $kycDetail)
+    {
+        $section = $request->input('section');
+
+        if (!in_array($section, ['personal', 'identity', 'pan', 'bank'], true)) {
+            return redirect()->back()->with('error', 'Invalid KYC section.');
+        }
+
+        $disk = Storage::disk('public');
+        $updates = [];
+
+        $deleteFile = function (?string $path) use ($disk) {
+            if ($path && $disk->exists($path)) {
+                $disk->delete($path);
+            }
+        };
+
+        // Status goes back to pending so the member can re-upload, but a remark
+        // stays so Approved KYC still lists them and shows which doc was removed.
+        $deletedRemark = 'Document deleted by admin. Member must re-upload.';
+
+        if ($section === 'personal') {
+            $deleteFile($kycDetail->profile_pic);
+            $updates = [
+                'profile_pic' => null,
+                'name' => null,
+                'email' => null,
+                'mobile' => null,
+                'state' => null,
+                'address' => null,
+                'kyc_status_personal' => 'pending',
+                'personal_remark' => $deletedRemark,
+            ];
+        } elseif ($section === 'identity') {
+            $deleteFile($kycDetail->front_image);
+            $deleteFile($kycDetail->back_image);
+            $updates = [
+                'attached_doc' => null,
+                'tax_id' => null,
+                'front_image' => null,
+                'back_image' => null,
+                'kyc_status_identity' => 'pending',
+                'kyc_remark' => $deletedRemark,
+                'identity_remark' => $deletedRemark,
+            ];
+        } elseif ($section === 'pan') {
+            $deleteFile($kycDetail->front_image_pan);
+            $updates = [
+                'pan_no' => null,
+                'front_image_pan' => null,
+                'kyc_status_pan' => 'pending',
+                'pan_remark' => $deletedRemark,
+            ];
+        } else { // bank
+            $deleteFile($kycDetail->front_image_bank);
+            $updates = [
+                'account_holder_name' => null,
+                'bank_name' => null,
+                'account_no' => null,
+                'ifsc_code' => null,
+                'bank_branch' => null,
+                'front_image_bank' => null,
+                'kyc_status_bank' => 'pending',
+                'bank_remark' => $deletedRemark,
+            ];
+        }
+
+        $kycDetail->update($updates);
+
+        return redirect()->back()->with(
+            'success',
+            ucfirst($section) . ' documents deleted. The member can upload new documents for this section.'
+        );
     }
 }

@@ -5,6 +5,10 @@
 !.env.example
 auth.json
 
+# Local fix log (do not commit)
+/CHANGELOG_FIXES.md
+/hostinger-deploy.zip
+
 # PHP dependencies (reinstall with: composer install)
 /vendor
 

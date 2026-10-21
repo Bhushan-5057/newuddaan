@@ -153,7 +153,7 @@
                                 @endif
                             </div>
                             @if ($kycDetail->kyc_status_personal == 'submitted')
-                                <div class="card-footer d-flex justify-content-end">
+                                <div class="card-footer d-flex justify-content-end flex-wrap gap-2">
                                     <form action="{{ route('admin.kyc.approve', $kycDetail) }}" method="POST"
                                         class="me-2">
                                         @csrf
@@ -168,6 +168,16 @@
                                     </form>
                                 </div>
                             @endif
+                            <div class="card-footer d-flex justify-content-end">
+                                <form action="{{ route('admin.kyc.deleteDocument', $kycDetail) }}" method="POST"
+                                      onsubmit="return confirm('Delete personal documents? The member can upload again.');">
+                                    @csrf
+                                    <input type="hidden" name="section" value="personal">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete documents">
+                                        <i class="bx bx-trash"></i> Delete Docs
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -215,7 +225,7 @@
                                 @endif
                             </div>
                             @if ($kycDetail->kyc_status_identity == 'submitted')
-                                <div class="card-footer d-flex justify-content-end">
+                                <div class="card-footer d-flex justify-content-end flex-wrap gap-2">
                                     <form action="{{ route('admin.kyc.approve', $kycDetail) }}" method="POST"
                                         class="me-2">
                                         @csrf
@@ -230,6 +240,16 @@
                                     </form>
                                 </div>
                             @endif
+                            <div class="card-footer d-flex justify-content-end">
+                                <form action="{{ route('admin.kyc.deleteDocument', $kycDetail) }}" method="POST"
+                                      onsubmit="return confirm('Delete identity documents? The member can upload again.');">
+                                    @csrf
+                                    <input type="hidden" name="section" value="identity">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete documents">
+                                        <i class="bx bx-trash"></i> Delete Docs
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -270,7 +290,7 @@
                                 @endif
                             </div>
                             @if ($kycDetail->kyc_status_pan == 'submitted')
-                                <div class="card-footer d-flex justify-content-end">
+                                <div class="card-footer d-flex justify-content-end flex-wrap gap-2">
                                     <form action="{{ route('admin.kyc.approve', $kycDetail) }}" method="POST"
                                         class="me-2">
                                         @csrf
@@ -285,6 +305,16 @@
                                     </form>
                                 </div>
                             @endif
+                            <div class="card-footer d-flex justify-content-end">
+                                <form action="{{ route('admin.kyc.deleteDocument', $kycDetail) }}" method="POST"
+                                      onsubmit="return confirm('Delete PAN documents? The member can upload again.');">
+                                    @csrf
+                                    <input type="hidden" name="section" value="pan">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete documents">
+                                        <i class="bx bx-trash"></i> Delete Docs
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -329,7 +359,7 @@
                                 @endif
                             </div>
                             @if ($kycDetail->kyc_status_bank == 'submitted')
-                                <div class="card-footer d-flex justify-content-end">
+                                <div class="card-footer d-flex justify-content-end flex-wrap gap-2">
                                     <form action="{{ route('admin.kyc.approve', $kycDetail) }}" method="POST"
                                         class="me-2">
                                         @csrf
@@ -344,6 +374,16 @@
                                     </form>
                                 </div>
                             @endif
+                            <div class="card-footer d-flex justify-content-end">
+                                <form action="{{ route('admin.kyc.deleteDocument', $kycDetail) }}" method="POST"
+                                      onsubmit="return confirm('Delete bank documents? The member can upload again.');">
+                                    @csrf
+                                    <input type="hidden" name="section" value="bank">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete documents">
+                                        <i class="bx bx-trash"></i> Delete Docs
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">

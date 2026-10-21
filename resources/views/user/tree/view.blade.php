@@ -191,15 +191,17 @@ $user = Auth::user();
         will-change: transform;
     }
     .genealogy-tree ul {
-        padding-top: 15px;
+        padding-top: 12px;
         position: relative;
         padding-left: 0;
         padding-right: 0;
         margin: 0 auto;
         display: flex;
         justify-content: center;
+        align-items: flex-start;
         width: max-content;
-        min-width: max-content;
+        min-width: 0;
+        gap: 0;
         transition: var(--transition);
     }
     .genealogy-tree > ul::before,
@@ -210,18 +212,20 @@ $user = Auth::user();
         left: 50%;
         border-left: 2px solid var(--line-color);
         width: 0;
-        height: 15px;
+        height: 12px;
     }
+    /* Compact columns: size to content only — do not stretch both legs
+       to the widest subtree (that made horizontal lines screen-wide). */
     .genealogy-tree li {
         text-align: center;
         list-style-type: none;
         position: relative;
-        padding: 16px 18px 0;
+        padding: 12px 8px 0;
         transition: var(--transition);
         flex: 0 0 auto;
         width: auto;
         max-width: none;
-        min-width: max-content;
+        min-width: 0;
         box-sizing: border-box;
     }
     .genealogy-tree li::before,
@@ -966,16 +970,14 @@ $user = Auth::user();
     const minZoom = 0.6;
     const maxZoom = 1.8;
     // ------------------------------------------------------------------
-    // Drill-down navigation
+    // In-place expand / collapse (sponsor + top levels stay visible)
     //
-    // Clicking a member re-roots the tree on them and fetches their own
-    // levels from the server; the previous tree is replaced rather than
-    // expanded in place. The breadcrumb records the path taken, and Reset
-    // returns to your own node.
+    // Initial: sponsor + left + right only.
+    // Click left member: open THREE levels on the LEFT under them only.
+    // Click right member: open THREE levels on the RIGHT under them only.
+    // Opposite side stays Null/Register. Sponsor UI unchanged.
     // ------------------------------------------------------------------
     @php
-        // Built here rather than inline: @json() cannot parse a multi-line
-        // array literal as its argument.
         $treeRootPayload = [
             'id' => $rootUser->id,
             'username' => $rootUser->username,
@@ -1007,7 +1009,6 @@ $user = Auth::user();
         });
     }
 
-    // Names that could not be drawn because their binary slot was taken.
     function renderHiddenNote(names) {
         const $note = $('#treeHiddenNote');
         if (!names || !names.length) {
@@ -1018,25 +1019,76 @@ $user = Auth::user();
         $note.prop('hidden', false);
     }
 
-    function loadSubTree(id) {
+    function clearForcedWidths() {
+        const tree = document.getElementById('genealogyTree');
+        if (!tree) return;
+        tree.querySelectorAll('li').forEach(function (li) {
+            li.style.flex = '0 0 auto';
+            li.style.width = 'auto';
+            li.style.minWidth = '';
+            li.style.maxWidth = '';
+        });
+    }
+
+    // Keep the opened member in view — do not jump back to the sponsor.
+    function focusInScroller(el) {
+        const scroller = document.querySelector('.genealogy-scroll');
+        if (!scroller || !el) return;
+        const place = function () {
+            const sRect = scroller.getBoundingClientRect();
+            const rRect = el.getBoundingClientRect();
+            scroller.scrollLeft += (rRect.left + rRect.width / 2) - (sRect.left + sRect.width / 2);
+            scroller.scrollTop += (rRect.top + rRect.height / 2) - (sRect.top + sRect.height / 3);
+        };
+        place();
+        requestAnimationFrame(place);
+    }
+
+    function afterTreeChange(focusEl) {
+        clearForcedWidths();
+        updateZoom();
+        requestAnimationFrame(function () {
+            if (focusEl) {
+                focusInScroller(focusEl);
+            }
+        });
+    }
+
+    // Collapse every dynamically loaded branch under $scope (jQuery node).
+    function collapseLoaded($scope) {
+        $scope.find('ul.is-loaded').remove();
+    }
+
+    function expandMember(id, $anchor, side) {
         if (treeBusy) return;
         treeBusy = true;
-
-        const $tree = $('#genealogyTree');
-        $tree.css('opacity', 0.4);
         $('#treeLoading').prop('hidden', false);
 
-        $.getJSON(TREE_FETCH_URL, { id: id })
+        const params = { id: id };
+        if (side === 1 || side === 2 || side === '1' || side === '2') {
+            params.side = side;
+        }
+
+        $.getJSON(TREE_FETCH_URL, params)
             .done(function(res) {
-                $tree.html(res.html);
-                if (Array.isArray(res.path) && res.path.length) {
-                    treePath = res.path;
+                if (!res.html) {
+                    showNotification('No downline to open');
+                    return;
                 }
-                renderBreadcrumb();
+                // Insert that side's 3 levels under the clicked member; sponsor stays.
+                $anchor.after(res.html);
+                if (res.root) {
+                    const last = treePath.length ? treePath[treePath.length - 1] : null;
+                    if (!last || String(last.id) !== String(res.root.id)) {
+                        treePath = treePath.concat([res.root]);
+                        renderBreadcrumb();
+                    }
+                }
                 renderHiddenNote(res.hidden);
-                updateZoom();
-                centerSponsor();
-                showNotification('Showing ' + (res.root ? res.root.username : 'team'));
+                const focusBox = $anchor.find('.member-view-box').get(0)
+                    || $anchor.next('ul').find('.member-view-box').get(0);
+                afterTreeChange(focusBox);
+                showNotification('Opened ' + (res.root ? res.root.username : 'member'));
             })
             .fail(function(xhr) {
                 const msg = (xhr.responseJSON && xhr.responseJSON.message)
@@ -1045,7 +1097,6 @@ $user = Auth::user();
                 showNotification(msg);
             })
             .always(function() {
-                $tree.css('opacity', 1);
                 $('#treeLoading').prop('hidden', true);
                 treeBusy = false;
             });
@@ -1057,38 +1108,94 @@ $user = Auth::user();
         centerSponsor();
         $(window).on('resize', centerSponsor);
 
-        // Open a member. Delegated, because the tree markup is replaced.
+        // Expand under the clicked left/right member; keep sponsor + upper UI.
         $(document).on('click', '#genealogyTree .member-view-box', function(e) {
-            // Copy / register controls keep their own behaviour.
             if ($(e.target).closest('.copy-username, .register-link, .copy-link').length) {
                 return;
             }
             e.preventDefault();
             e.stopPropagation();
 
-            const id = $(this).data('user-id');
+            const id = $(this).attr('data-user-id') || $(this).data('user-id');
             if (!id) return;
 
-            // Already the root of what is displayed - nothing to open.
-            if (treePath.length && String(treePath[treePath.length - 1].id) === String(id)) {
+            const $anchor = $(this).closest('a');
+            const $nextUl = $anchor.next('ul');
+
+            // Already expanded dynamically → collapse this branch.
+            if ($nextUl.length && $nextUl.hasClass('is-loaded')) {
+                $nextUl.remove();
+                const keepUntil = treePath.findIndex(function(n) { return String(n.id) === String(id); });
+                if (keepUntil >= 0) {
+                    treePath = treePath.slice(0, keepUntil + 1);
+                }
+                renderBreadcrumb();
+                afterTreeChange($(this).get(0));
+                showNotification('Collapsed');
                 return;
             }
-            loadSubTree(id);
+
+            // Sponsor (or any node with server-rendered children) already shows
+            // left/right. Collapse only deeper dynamic opens under it.
+            if ($nextUl.length && !$nextUl.hasClass('is-loaded')) {
+                const hadDeep = $nextUl.find('ul.is-loaded').length > 0;
+                collapseLoaded($nextUl);
+                if (hadDeep) {
+                    treePath = treePath.slice(0, 1);
+                    renderBreadcrumb();
+                    afterTreeChange($(this).get(0));
+                    showNotification('Collapsed lower levels');
+                    return;
+                }
+                // Initial children already visible — leave sponsor UI as-is.
+                return;
+            }
+
+            // Left or right leaf → open 3 levels on that side only.
+            const side = $(this).attr('data-side') || $(this).data('side') || '';
+            expandMember(id, $anchor, side);
         });
 
-        // Jump back up via the breadcrumb.
+        // Breadcrumb: collapse everything below that member; tree stays rooted.
         $(document).on('click', '.tree-crumb', function() {
             if ($(this).hasClass('is-current')) return;
-            loadSubTree($(this).data('id'));
+            const crumbId = String($(this).attr('data-id') || $(this).data('id'));
+            const $box = $('#genealogyTree .member-view-box[data-user-id="' + crumbId + '"]');
+            if (!$box.length) {
+                $('#genealogyTree ul.is-loaded').remove();
+                treePath = treePath.slice(0, 1);
+                renderBreadcrumb();
+                centerSponsor();
+                return;
+            }
+            const $anchor = $box.closest('a');
+            const $ul = $anchor.next('ul');
+            if ($ul.length) {
+                if ($ul.hasClass('is-loaded')) {
+                    $ul.remove();
+                } else {
+                    collapseLoaded($ul);
+                }
+            }
+            const idx = treePath.findIndex(function(n) { return String(n.id) === crumbId; });
+            if (idx >= 0) {
+                treePath = treePath.slice(0, idx + 1);
+            }
+            renderBreadcrumb();
+            afterTreeChange($box.get(0));
         });
 
         $('#resetTree').on('click touchstart', function(e) {
             e.preventDefault();
-            if (treePath.length === 1 && String(treePath[0].id) === String(TREE_ROOT.id)) {
-                showNotification('Already at your own tree');
-                return;
-            }
-            loadSubTree(TREE_ROOT.id);
+            $('#genealogyTree ul.is-loaded').remove();
+            treePath = [{
+                id: TREE_ROOT.id,
+                username: TREE_ROOT.username,
+                name: TREE_ROOT.name
+            }];
+            renderBreadcrumb();
+            centerSponsor();
+            showNotification('Back to your tree');
         });
         $('#zoomIn').on('click touchstart', function(e) {
             e.preventDefault();
@@ -1102,16 +1209,16 @@ $user = Auth::user();
             updateZoom();
             showNotification('Zoomed out');
         });
-        // Handle copy link button clicks
-        $('.copy-link').on('click touchstart', function(e) {
+        // Delegated so Register / copy still work after in-place expand.
+        $(document).on('click touchstart', '.copy-link', function(e) {
             e.preventDefault();
             const link = $(this).data('link');
             copyToClipboard(link);
             showNotification('Link copied to clipboard!');
         });
-        // Handle register button clicks
-        $('.register-link').on('click touchstart', function(e) {
+        $(document).on('click touchstart', '.register-link', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             const link = $(this).data('link');
             window.open(link, '_blank');
             showNotification('Opening registration page...');
@@ -1129,7 +1236,9 @@ $user = Auth::user();
 
             pan.addEventListener('pointerdown', function(e) {
                 if (e.button !== 0) return;
-                if (e.target.closest('.copy-username, .register-link, .copy-link, button')) return;
+                // Never start a pan on a member node — that stole clicks and
+                // blocked opening the next left/right members.
+                if (e.target.closest('.member-view-box, .copy-username, .register-link, .copy-link, button, a')) return;
                 dragging = true;
                 moved = false;
                 startX = e.clientX;
@@ -1167,34 +1276,8 @@ $user = Auth::user();
     });
     
     
-    function balanceLegs() {
-        const tree = document.getElementById('genealogyTree');
-        if (!tree) return;
-        const lists = Array.from(tree.querySelectorAll('ul'));
-        for (let i = lists.length - 1; i >= 0; i--) {
-            const items = Array.from(lists[i].children).filter(function (el) {
-                return el.tagName === 'LI';
-            });
-            if (items.length < 2) continue;
-            items.forEach(function (li) {
-                li.style.flex = '0 0 auto';
-                li.style.width = 'auto';
-                li.style.minWidth = '';
-                li.style.maxWidth = '';
-            });
-            const widest = Math.ceil(Math.max.apply(null, items.map(function (li) {
-                return li.offsetWidth;
-            })));
-            items.forEach(function (li) {
-                li.style.flex = '0 0 ' + widest + 'px';
-                li.style.width = widest + 'px';
-                li.style.minWidth = widest + 'px';
-                li.style.maxWidth = widest + 'px';
-            });
-        }
-    }
     function centerSponsor() {
-        balanceLegs();
+        clearForcedWidths();
         const scroller = document.querySelector('.genealogy-scroll');
         const root = document.querySelector('#genealogyTree .member-view-box');
         if (!scroller || !root) return;

@@ -83,10 +83,19 @@ class DashboardController extends Controller
         // Wallets
         $teamwallets = WalletType::where('wallet_type', 'team')->where('status', true)->where($RegistrationType, true)->get();
         $wallets = WalletType::where('wallet_type', 'wallet')->where('status', true)->get();
+        // Dashboard card order: Active Bonus → Matching → Bonanza → Reference,
+        // then Total Income (blade) → My Wallet (wallets loop).
+        $incomeCardOrder = ['reward', 'binary', 'bonanza', 'direct'];
         $incometype = WalletType::where('wallet_type', 'income')
             ->where($RegistrationType, '1')
             ->where('status', true)
-            ->get();
+            ->get()
+            ->sortBy(function ($income) use ($incomeCardOrder) {
+                $pos = array_search($income->slug, $incomeCardOrder, true);
+
+                return $pos === false ? 999 : $pos;
+            })
+            ->values();
         $teamtype = WalletType::where('wallet_type', 'team')
             ->where($RegistrationType, '1')
             ->where('status', true)

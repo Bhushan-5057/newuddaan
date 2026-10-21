@@ -56,11 +56,14 @@
     // rendered must not be drawn as an empty "Register" slot.
     $atMaxLevel = $level >= $treeMaxLevel;
     $rootUsername = auth()->user()->username;
+    $onlyPosition = $onlyPosition ?? null;
+    $nodeSide = $nodeSide ?? null;
 @endphp
 
 <a href="javascript:void(0);" title="{{ $user->name }} - {{ $user->username }}">
-    {{-- data-user-id is what the drill-down handler reads to re-root here. --}}
-    <div class="member-view-box" data-user-id="{{ $user->id }}">
+    {{-- data-user-id / data-side drive drill-down (side 1=left, 2=right). --}}
+    <div class="member-view-box" data-user-id="{{ $user->id }}"
+         @if ($nodeSide) data-side="{{ $nodeSide }}" @endif>
 
                @if($user->is_free_id == 1)
 
@@ -117,6 +120,7 @@
 
 @unless ($atMaxLevel)
 <ul class="{{ $level === 0 ? 'active' : '' }}">
+    @if (!$onlyPosition || (int) $onlyPosition === 1)
     <li>
         @if ($leftChild)
 
@@ -127,6 +131,8 @@
                 'treeNodes' => $treeNodes,
                 'treeBv' => $treeBv,
                 'treeChildren' => $treeChildren,
+                'onlyPosition' => $onlyPosition,
+                'nodeSide' => 1,
             ])
 
         @else
@@ -153,7 +159,9 @@
 
         @endif
     </li>
+    @endif
 
+    @if (!$onlyPosition || (int) $onlyPosition === 2)
     <li>
         @if ($rightChild)
 
@@ -164,6 +172,8 @@
                 'treeNodes' => $treeNodes,
                 'treeBv' => $treeBv,
                 'treeChildren' => $treeChildren,
+                'onlyPosition' => $onlyPosition,
+                'nodeSide' => 2,
             ])
 
         @else
@@ -190,5 +200,6 @@
 
         @endif
     </li>
+    @endif
 </ul>
 @endunless
