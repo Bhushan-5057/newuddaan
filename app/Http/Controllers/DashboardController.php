@@ -85,11 +85,17 @@ class DashboardController extends Controller
         $wallets = WalletType::where('wallet_type', 'wallet')->where('status', true)->get();
         // Dashboard card order: Active Bonus → Matching → Bonanza → Reference,
         // then Total Income (blade) → My Wallet (wallets loop).
+        // Always include Reference Income (slug=direct) when status=1 even if the
+        // reg_type column flag is off — live DB had generation=0 and dropped the 6th card.
         $incomeCardOrder = ['reward', 'binary', 'bonanza', 'direct'];
         $incometype = WalletType::where('wallet_type', 'income')
-            ->where($RegistrationType, '1')
             ->where('status', true)
+            ->where(function ($q) use ($RegistrationType) {
+                $q->where($RegistrationType, '1')
+                    ->orWhere('slug', 'direct');
+            })
             ->get()
+            ->unique('slug')
             ->sortBy(function ($income) use ($incomeCardOrder) {
                 $pos = array_search($income->slug, $incomeCardOrder, true);
 
