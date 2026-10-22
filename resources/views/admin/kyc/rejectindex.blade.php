@@ -1,4 +1,4 @@
-@extends('admin.layouts.app')
+﻿@extends('admin.layouts.app')
 
 @section('title', 'KYC Verification Requests')
 
@@ -106,7 +106,7 @@
                     
                     {{-- LEFT COLUMN: IDENTITY & PAN DETAILS --}}
                     <div class="col-lg-6 border-end">
-                        <h4 class="fw-bold text-primary mb-3">Identity Documents 🆔</h4>
+                        <h4 class="fw-bold text-primary mb-3">Identity Documents ðŸ†”</h4>
                         
                         {{-- Aadhaar --}}
                         <h6 class="fw-bold text-info">Aadhaar Details</h6>
@@ -116,8 +116,8 @@
                             <div class="col-6 text-center">
                                 <p class="mb-1">Front</p>
                                 @if($k->front_image)
-                                <a href="{{ asset('storage/'.$k->front_image) }}" target="_blank">
-                                    <img src="{{ asset('storage/'.$k->front_image) }}" class="img-fluid rounded shadow" style="max-width:200px;">
+                                <a href="{{ public_media($k->front_image) }}" target="_blank">
+                                    <img src="{{ public_media($k->front_image) }}" class="img-fluid rounded shadow" style="max-width:200px;">
                                 </a>
                                 @else
                                 <span class="text-danger">Not Uploaded</span>
@@ -127,8 +127,8 @@
                             <div class="col-6 text-center">
                                 <p class="mb-1">Back</p>
                                 @if($k->back_image)
-                                <a href="{{ asset('storage/'.$k->back_image) }}" target="_blank">
-                                    <img src="{{ asset('storage/'.$k->back_image) }}" class="img-fluid rounded shadow" style="max-width:200px;">
+                                <a href="{{ public_media($k->back_image) }}" target="_blank">
+                                    <img src="{{ public_media($k->back_image) }}" class="img-fluid rounded shadow" style="max-width:200px;">
                                 </a>
                                 @else
                                 <span class="text-danger">Not Uploaded</span>
@@ -150,8 +150,8 @@
 
                         <div class="text-center mb-3">
                             @if($k->front_image_pan)
-                            <a href="{{ asset('storage/'.$k->front_image_pan) }}" target="_blank">
-                                <img src="{{ asset('storage/'.$k->front_image_pan) }}" class="img-fluid rounded shadow" style="max-width:220px;">
+                            <a href="{{ public_media($k->front_image_pan) }}" target="_blank">
+                                <img src="{{ public_media($k->front_image_pan) }}" class="img-fluid rounded shadow" style="max-width:220px;">
                             </a>
                             @else
                             <span class="text-danger">Not Uploaded</span>
@@ -168,7 +168,7 @@
                     
                     {{-- RIGHT COLUMN: BANK DETAILS --}}
                     <div class="col-lg-6">
-                        <h4 class="fw-bold text-success mb-3">Bank Account Details 🏦</h4>
+                        <h4 class="fw-bold text-success mb-3">Bank Account Details ðŸ¦</h4>
                         
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -190,8 +190,8 @@
                                 $bankImg = $k->bank_image ?? ($k->passbook_image ?? null);
                             @endphp
                             @if($bankImg)
-                                <a href="{{ asset('storage/'.$bankImg) }}" target="_blank">
-                                    <img src="{{ asset('storage/'.$bankImg) }}" class="img-fluid rounded border shadow" style="max-height: 150px; object-fit: contain;">
+                                <a href="{{ public_media($bankImg) }}" target="_blank">
+                                    <img src="{{ public_media($bankImg) }}" class="img-fluid rounded border shadow" style="max-height: 150px; object-fit: contain;">
                                 </a>
                             @else
                                 <span class="text-danger d-block p-3">Bank Document Image Not Uploaded</span>
@@ -299,7 +299,7 @@
             {{-- ALL APPROVED FOOTER --}}
             @if ($k->kyc_status_identity == 'approved' && $k->kyc_status_pan == 'approved' && ($k->kyc_status_bank ?? 'pending') == 'approved')
                 <div class="modal-footer">
-                    <span class="badge bg-success p-2 w-100">✅ ALL KYC SECTIONS APPROVED</span>
+                    <span class="badge bg-success p-2 w-100">âœ… ALL KYC SECTIONS APPROVED</span>
                 </div>
             @endif
 

@@ -39,9 +39,16 @@ class AppServiceProvider extends ServiceProvider
     {
          Paginator::useBootstrapFive();
 
-        // Live HTTPS: keep asset()/url() on https when APP_URL is https
-        // (avoids mixed-content broken images behind Hostinger SSL).
-        if (str_starts_with((string) config('app.url'), 'https://')) {
+        // Live HTTPS: keep asset()/url() on https behind Hostinger SSL.
+        // Prefer request HTTPS / forwarded proto, not only APP_URL, so admin
+        // img src is never http:// (browsers block that as mixed content while
+        // opening the same URL in a new tab still works after redirect).
+        if (
+            str_starts_with((string) config('app.url'), 'https://')
+            || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+            || (isset($_SERVER['SERVER_PORT']) && (string) $_SERVER['SERVER_PORT'] === '443')
+        ) {
             URL::forceScheme('https');
         }
 

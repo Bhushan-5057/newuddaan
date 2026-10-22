@@ -37,3 +37,32 @@ if (!function_exists('company_info')) {
         return $settings[$label] ?? $default;
     }
 }
+
+if (!function_exists('public_media')) {
+    /**
+     * URL for a public-disk file (KYC, products, profile, etc.).
+     * Always uses /storage/... and upgrades http→https so admin <img> tags
+     * are not blocked as mixed content on the live HTTPS site.
+     */
+    function public_media(?string $path): string
+    {
+        if ($path === null || $path === '') {
+            return '';
+        }
+
+        $path = str_replace('\\', '/', trim($path));
+
+        if (preg_match('#^https?://#i', $path)) {
+            return preg_replace('#^http://#i', 'https://', $path);
+        }
+
+        $path = ltrim($path, '/');
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, strlen('storage/'));
+        }
+
+        $url = asset('storage/' . $path);
+
+        return preg_replace('#^http://#i', 'https://', $url);
+    }
+}

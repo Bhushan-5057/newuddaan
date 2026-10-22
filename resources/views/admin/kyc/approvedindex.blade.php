@@ -1,4 +1,4 @@
-@extends('admin.layouts.app')
+﻿@extends('admin.layouts.app')
 
 @section('title', 'KYC Verification Requests')
 
@@ -20,7 +20,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h2>KYC Verification Management</h2>
         
-        <!-- Navigation Tabs: સ્ટેટસ બદલવા માટે -->
+        <!-- Navigation Tabs: àª¸à«àªŸà«‡àªŸàª¸ àª¬àª¦àª²àªµàª¾ àª®àª¾àªŸà«‡ -->
         <div class="btn-group shadow-sm">
             <a href="{{ route('admin.kyc.index') }}" class="btn btn-outline-primary {{ Route::is('admin.kyc.index') ? 'active' : '' }}">Pending Requests</a>
             <a href="{{ route('admin.kyc.approvedindex') }}" class="btn btn-outline-success {{ Route::is('admin.kyc.approvedindex') ? 'active' : '' }}">Approved KYC</a>
@@ -133,7 +133,7 @@
         <div class="modal-content border-0 shadow-lg">
 
             <div class="modal-header bg-dark text-white py-3">
-                <h5 class="modal-title fw-bold"><i class="fa fa-id-card me-2 text-warning"></i>KYC Review Panel — {{ $k->user->name ?? 'User Profile' }}</h5>
+                <h5 class="modal-title fw-bold"><i class="fa fa-id-card me-2 text-warning"></i>KYC Review Panel â€” {{ $k->user->name ?? 'User Profile' }}</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
@@ -143,7 +143,7 @@
                     {{-- 1. PERSONAL DETAILS --}}
                     <div class="col-md-6 border-end">
                         <div class="p-2 rounded bg-light mb-3 d-flex justify-content-between align-items-center">
-                            <h5 class="fw-bold text-primary mb-0">1. Personal Information 👤</h5>
+                            <h5 class="fw-bold text-primary mb-0">1. Personal Information ðŸ‘¤</h5>
                             <span class="badge {{ $k->kyc_status_personal == 'approved' ? 'bg-success' : ($k->kyc_status_personal == 'rejected' ? 'bg-danger' : 'bg-primary') }}">{{ ucfirst($k->kyc_status_personal ?? 'pending') }}</span>
                         </div>
                         <div class="ps-2">
@@ -159,7 +159,7 @@
                     {{-- 2. IDENTITY (AADHAAR) DETAILS --}}
                     <div class="col-md-6">
                         <div class="p-2 rounded bg-light mb-3 d-flex justify-content-between align-items-center">
-                            <h5 class="fw-bold text-info mb-0">2. Identity Verification 🆔</h5>
+                            <h5 class="fw-bold text-info mb-0">2. Identity Verification ðŸ†”</h5>
                             <span class="badge {{ $k->kyc_status_identity == 'approved' ? 'bg-success' : ($k->kyc_status_identity == 'rejected' ? 'bg-danger' : ($k->kyc_status_identity == 'pending' ? 'bg-secondary' : 'bg-primary')) }}">{{ ucfirst($k->kyc_status_identity ?? 'pending') }}</span>
                         </div>
                         <div class="ps-2">
@@ -169,8 +169,8 @@
                                 <div class="col-6">
                                     <small class="d-block text-muted mb-1 fw-bold">Front Side</small>
                                     @if($k->front_image)
-                                    <a href="{{ asset('storage/'.$k->front_image) }}" target="_blank">
-                                        <img src="{{ asset('storage/'.$k->front_image) }}" class="img-fluid rounded border shadow-sm zoom-image" style="max-height: 110px; object-fit: contain;">
+                                    <a href="{{ public_media($k->front_image) }}" target="_blank">
+                                        <img src="{{ public_media($k->front_image) }}" class="img-fluid rounded border shadow-sm zoom-image" style="max-height: 110px; object-fit: contain;">
                                     </a>
                                     @else
                                     <span class="text-danger border rounded d-block p-3 bg-white"><small>Not Uploaded / Deleted</small></span>
@@ -179,8 +179,8 @@
                                 <div class="col-6">
                                     <small class="d-block text-muted mb-1 fw-bold">Back Side</small>
                                     @if($k->back_image)
-                                    <a href="{{ asset('storage/'.$k->back_image) }}" target="_blank">
-                                        <img src="{{ asset('storage/'.$k->back_image) }}" class="img-fluid rounded border shadow-sm zoom-image" style="max-height: 110px; object-fit: contain;">
+                                    <a href="{{ public_media($k->back_image) }}" target="_blank">
+                                        <img src="{{ public_media($k->back_image) }}" class="img-fluid rounded border shadow-sm zoom-image" style="max-height: 110px; object-fit: contain;">
                                     </a>
                                     @else
                                     <span class="text-danger border rounded d-block p-3 bg-white"><small>Not Uploaded / Deleted</small></span>
@@ -198,7 +198,7 @@
                     {{-- 3. PAN DETAILS --}}
                     <div class="col-md-6 border-end">
                         <div class="p-2 rounded bg-light mb-3 d-flex justify-content-between align-items-center">
-                            <h5 class="fw-bold text-warning mb-0">3. PAN Card Data 💳</h5>
+                            <h5 class="fw-bold text-warning mb-0">3. PAN Card Data ðŸ’³</h5>
                             <span class="badge {{ $k->kyc_status_pan == 'approved' ? 'bg-success' : ($k->kyc_status_pan == 'rejected' ? 'bg-danger' : ($k->kyc_status_pan == 'pending' ? 'bg-secondary' : 'bg-primary')) }}">{{ ucfirst($k->kyc_status_pan ?? 'pending') }}</span>
                         </div>
                         <div class="ps-2">
@@ -206,8 +206,8 @@
                             
                             <div class="text-center mb-2">
                                 @if($k->front_image_pan)
-                                <a href="{{ asset('storage/'.$k->front_image_pan) }}" target="_blank">
-                                    <img src="{{ asset('storage/'.$k->front_image_pan) }}" class="img-fluid rounded border shadow-sm zoom-image" style="max-height: 110px; object-fit: contain;">
+                                <a href="{{ public_media($k->front_image_pan) }}" target="_blank">
+                                    <img src="{{ public_media($k->front_image_pan) }}" class="img-fluid rounded border shadow-sm zoom-image" style="max-height: 110px; object-fit: contain;">
                                 </a>
                                 @else
                                 <span class="text-danger border rounded d-inline-block p-3 bg-white w-50"><small>Not Uploaded / Deleted</small></span>
@@ -222,7 +222,7 @@
                     {{-- 4. BANK ACCOUNT DETAILS --}}
                     <div class="col-md-6">
                         <div class="p-2 rounded bg-light mb-3 d-flex justify-content-between align-items-center">
-                            <h5 class="fw-bold text-success mb-0">4. Bank Account Info 🏦</h5>
+                            <h5 class="fw-bold text-success mb-0">4. Bank Account Info ðŸ¦</h5>
                             <span class="badge {{ $k->kyc_status_bank == 'approved' ? 'bg-success' : ($k->kyc_status_bank == 'rejected' ? 'bg-danger' : ($k->kyc_status_bank == 'pending' ? 'bg-secondary' : 'bg-primary')) }}">{{ ucfirst($k->kyc_status_bank ?? 'pending') }}</span>
                         </div>
                         <div class="ps-2">

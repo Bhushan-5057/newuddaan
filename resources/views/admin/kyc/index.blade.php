@@ -1,4 +1,4 @@
-@extends('admin.layouts.app')
+﻿@extends('admin.layouts.app')
 
 @section('title', 'KYC Requests')
 
@@ -142,8 +142,8 @@
                                         class="badge {{ $kycDetail->kyc_status_personal == 'submitted' ? 'bg-primary' : ($kycDetail->kyc_status_personal == 'approved' ? 'bg-success' : 'bg-danger') }}">{{ ucfirst($kycDetail->kyc_status_personal) }}</span>
                                 </p>
                                  @if ($kycDetail->profile_pic)
-                                    <a href="{{ asset('storage/' . $kycDetail->profile_pic) }}" target="_blank">
-                                        <img src="{{ asset('storage/' . $kycDetail->profile_pic) }}" class="img-fluid zoom-image rounded" style="max-width:150px;">
+                                    <a href="{{ public_media($kycDetail->profile_pic) }}" target="_blank">
+                                        <img src="{{ public_media($kycDetail->profile_pic) }}" class="img-fluid zoom-image rounded" style="max-width:150px;">
                                     </a>
                                 @endif
 
@@ -209,14 +209,14 @@
                                         class="badge {{ $kycDetail->kyc_status_identity == 'submitted' ? 'bg-primary' : ($kycDetail->kyc_status_identity == 'approved' ? 'bg-success' : 'bg-danger') }}">{{ ucfirst($kycDetail->kyc_status_identity) }}</span>
                                 </p>
                                @if ($kycDetail->front_image)
-                                    <a href="{{ asset('storage/'.$kycDetail->front_image) }}" target="_blank">
-                                        <img src="{{ asset('storage/'.$kycDetail->front_image) }}" class="img-fluid zoom-image rounded shadow" style="max-width:200px;">
+                                    <a href="{{ public_media($kycDetail->front_image) }}" target="_blank">
+                                        <img src="{{ public_media($kycDetail->front_image) }}" class="img-fluid zoom-image rounded shadow" style="max-width:200px;">
                                     </a>
                                 @endif
                                 
                                 @if ($kycDetail->back_image)
-                                    <a href="{{ asset('storage/'.$kycDetail->back_image) }}" target="_blank">
-                                        <img src="{{ asset('storage/'.$kycDetail->back_image) }}" class="img-fluid zoom-image rounded shadow" style="max-width:200px;">
+                                    <a href="{{ public_media($kycDetail->back_image) }}" target="_blank">
+                                        <img src="{{ public_media($kycDetail->back_image) }}" class="img-fluid zoom-image rounded shadow" style="max-width:200px;">
                                     </a>
                                 @endif
 
@@ -280,8 +280,8 @@
                                         class="badge {{ $kycDetail->kyc_status_pan == 'submitted' ? 'bg-primary' : ($kycDetail->kyc_status_pan == 'approved' ? 'bg-success' : 'bg-danger') }}">{{ ucfirst($kycDetail->kyc_status_pan) }}</span>
                                 </p>
                                 @if ($kycDetail->front_image_pan)
-                                    <a href="{{ asset('storage/' . $kycDetail->front_image_pan) }}" target="_blank">
-                                        <img src="{{ asset('storage/' . $kycDetail->front_image_pan) }}" class="img-fluid zoom-image rounded" style="max-width: 200px;">
+                                    <a href="{{ public_media($kycDetail->front_image_pan) }}" target="_blank">
+                                        <img src="{{ public_media($kycDetail->front_image_pan) }}" class="img-fluid zoom-image rounded" style="max-width: 200px;">
                                     </a>
                                 @endif
 
@@ -349,8 +349,8 @@
                                         class="badge {{ $kycDetail->kyc_status_bank == 'submitted' ? 'bg-primary' : ($kycDetail->kyc_status_bank == 'approved' ? 'bg-success' : 'bg-danger') }}">{{ ucfirst($kycDetail->kyc_status_bank) }}</span>
                                 </p>
                                @if ($kycDetail->front_image_bank)
-                                    <a href="{{ asset('storage/' . $kycDetail->front_image_bank) }}" target="_blank">
-                                        <img src="{{ asset('storage/' . $kycDetail->front_image_bank) }}" class="img-fluid zoom-image rounded" style="max-width: 200px;">
+                                    <a href="{{ public_media($kycDetail->front_image_bank) }}" target="_blank">
+                                        <img src="{{ public_media($kycDetail->front_image_bank) }}" class="img-fluid zoom-image rounded" style="max-width: 200px;">
                                     </a>
                                 @endif
 

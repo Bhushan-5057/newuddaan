@@ -15,21 +15,30 @@ use App\Http\Controllers\DashboardController;
 Route::get('/storage/{path}', function (string $path) {
     $path = str_replace('\\', '/', $path);
     $path = ltrim($path, '/');
+    // DB paths sometimes already include a leading "storage/"
+    if (str_starts_with($path, 'storage/')) {
+        $path = substr($path, strlen('storage/'));
+    }
     if ($path === '' || str_contains($path, '..')) {
         abort(404);
     }
 
-    $base = realpath(storage_path('app/public'));
-    if ($base === false) {
+    $base = storage_path('app/public');
+    $full = $base . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path);
+    // Prefer is_file over realpath — Hostinger symlinks can make realpath/str_starts_with fail.
+    if (!is_file($full)) {
         abort(404);
     }
 
-    $full = realpath($base . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path));
-    if ($full === false || !is_file($full) || !str_starts_with($full, $base)) {
+    $realBase = realpath($base);
+    $realFull = realpath($full);
+    if ($realBase === false || $realFull === false || !str_starts_with($realFull, $realBase)) {
         abort(404);
     }
 
-    return response()->file($full);
+    return response()->file($realFull, [
+        'Cache-Control' => 'public, max-age=604800',
+    ]);
 })->where('path', '.*')->name('storage.public');
 
 use App\Http\Controllers\AuthController;
