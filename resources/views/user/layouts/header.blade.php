@@ -192,7 +192,7 @@
                     <span class="h-45 w-45 d-flex-center b-r-10 position-relative m-auto">
 
                         {{-- Profile Image --}}
-                        @if (Auth::user()->profile_image)
+                        @if (Auth::check() && Auth::user()->profile_image)
                             <img alt="avatar" class="img-fluid b-r-10"
                                 src="{{ asset('storage/' . Auth::user()->profile_image) }}">
                         @else
@@ -206,12 +206,12 @@
                     <div class="flex-grow-1 ps-2">
                         {{-- User Name --}}
                         <h6 class="text-primary mb-0">
-                            {{ $shortName ?? Auth::user()->name }}
+                            {{ $shortName ?? (Auth::check() ? Auth::user()->name : '') }}
                         </h6>
 
                         {{-- Email / Role --}}
                         <p class="text-muted f-s-12 mb-0">
-                            {{ Auth::user()->email }}
+                            {{ Auth::check() ? Auth::user()->email : '' }}
                         </p>
                     </div>
 
@@ -772,7 +772,7 @@
                         <a href="{{ route('dashboard.user') }}"
                             class="d-flex align-items-center">
 
-                            @if(Auth::user()->profile_image)
+                            @if(Auth::check() && Auth::user()->profile_image)
                                 <img src="{{ asset('storage/' . Auth::user()->profile_image) }}"
                                     class="rounded-circle"
                                     width="40"
