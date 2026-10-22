@@ -237,8 +237,9 @@
 
                 let gallery = JSON.parse(b.dataset.gallery || '[]');
                 let html = '';
+                const storageBase = @json(rtrim(asset('storage'), '/'));
                 gallery.forEach(img => {
-                    html += `<img src="/storage/${img}"
+                    html += `<img src="${storageBase}/${String(img).replace(/^\/+/, '')}"
                  style="width:100px;margin:5px;border-radius:6px;border:1px solid #ddd">`;
                 });
                 document.getElementById('sv_gallery').innerHTML = html;

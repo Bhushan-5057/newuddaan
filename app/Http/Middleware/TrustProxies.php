@@ -9,10 +9,12 @@ class TrustProxies extends Middleware
 {
     /**
      * The trusted proxies for this application.
+     * Trust all proxies so Hostinger / Cloudflare HTTPS (X-Forwarded-Proto)
+     * is detected and asset() URLs stay https on live.
      *
      * @var array<int, string>|string|null
      */
-    protected $proxies;
+    protected $proxies = '*';
 
     /**
      * The headers that should be used to detect proxies.

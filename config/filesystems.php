@@ -36,6 +36,9 @@ return [
             'throw' => false,
         ],
 
+        // Uploads land in storage/app/public. Browsers load them as /storage/...
+        // Prefer `php artisan storage:link`. If the link is missing on shared
+        // hosting, routes/web.php also serves the same files (storage.public).
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

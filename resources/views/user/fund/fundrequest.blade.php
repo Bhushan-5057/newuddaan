@@ -431,8 +431,8 @@ if (fileInput) {
             typeDropdown.style.display = 'none';
 
             if (image && address) {
-                qrImage.src = `/storage/${image}`;
-                walletAddress.textContent = address;
+                qrImage.src = @json(rtrim(asset('storage'), '/')) + '/' + String(image).replace(/^\/+/, '');
+                walletAddress.textContent = address
                 qrContainer.classList.remove('d-none');
                 qrPlaceholder.classList.add('d-none');
             } else {

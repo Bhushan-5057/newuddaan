@@ -444,8 +444,9 @@
         
         let gallery = JSON.parse(b.dataset.gallery || '[]');
         let g = '';
+        const storageBase = @json(rtrim(asset('storage'), '/'));
         gallery.forEach(i => {
-            g += `<img src="/storage/${i}" style="width:100px;margin:5px;border-radius:6px">`;
+            g += `<img src="${storageBase}/${String(i).replace(/^\/+/, '')}" style="width:100px;margin:5px;border-radius:6px">`;
         });
         document.getElementById('v_gallery').innerHTML = g;
     });
@@ -477,8 +478,9 @@
         // GALLERY PREVIEW
         let gallery = JSON.parse(b.dataset.gallery || '[]');
         let html = '';
+        const storageBaseEdit = @json(rtrim(asset('storage'), '/'));
         gallery.forEach(img => {
-            html += `<img src="/storage/${img}" style="width:100px;margin:4px;border-radius:6px">`;
+            html += `<img src="${storageBaseEdit}/${String(img).replace(/^\/+/, '')}" style="width:100px;margin:4px;border-radius:6px">`;
         });
         document.getElementById('editGalleryPreview').innerHTML = html;
         

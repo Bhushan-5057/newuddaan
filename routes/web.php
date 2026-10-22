@@ -2,6 +2,36 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+
+/*
+|--------------------------------------------------------------------------
+| Public-disk media fallback (Hostinger / no symlink)
+|--------------------------------------------------------------------------
+| Files are stored in storage/app/public and normally served via the
+| public/storage symlink (php artisan storage:link). When that link is
+| missing on shared hosting, this route still serves the same paths that
+| Blade already uses: asset('storage/' . $relativePath).
+*/
+Route::get('/storage/{path}', function (string $path) {
+    $path = str_replace('\\', '/', $path);
+    $path = ltrim($path, '/');
+    if ($path === '' || str_contains($path, '..')) {
+        abort(404);
+    }
+
+    $base = realpath(storage_path('app/public'));
+    if ($base === false) {
+        abort(404);
+    }
+
+    $full = realpath($base . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path));
+    if ($full === false || !is_file($full) || !str_starts_with($full, $base)) {
+        abort(404);
+    }
+
+    return response()->file($full);
+})->where('path', '.*')->name('storage.public');
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AccountController;

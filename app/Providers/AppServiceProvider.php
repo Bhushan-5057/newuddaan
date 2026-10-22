@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\URL;
 use App\Models\Transaction;
 use App\Models\AdvanceInfo;
 use App\Models\WalletType;
@@ -37,7 +38,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
          Paginator::useBootstrapFive();
-        
+
+        // Live HTTPS: keep asset()/url() on https when APP_URL is https
+        // (avoids mixed-content broken images behind Hostinger SSL).
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
+
             View::composer('*', function ($view) {
         if (Auth::check()) {
             $user = Auth::user();

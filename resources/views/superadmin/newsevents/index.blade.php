@@ -125,7 +125,8 @@ $(document).ready(function () {
             $('#noticeForm').attr('action', `/superadmin/noticeboard/${id}`);
 
             if (res.img_path) {
-                $('#existingImage').html(`<img src="/storage/${res.img_path}" width="100">`);
+                const storageBase = @json(rtrim(asset('storage'), '/'));
+                $('#existingImage').html(`<img src="${storageBase}/${String(res.img_path).replace(/^\/+/, '')}" width="100">`);
             } else {
                 $('#existingImage').html('');
             }

@@ -127,6 +127,7 @@ $(document).ready(function () {
     // Edit Button Click
     $(document).on('click', '.btn-edit', function () {
         const data = $(this).data();
+        const uploadsBase = @json(rtrim(asset('uploads'), '/'));
 
         $('#edit-id').val(data.id);
         $('#edit-title').val(data.title);
@@ -147,7 +148,7 @@ $(document).ready(function () {
             case 'file':
                 inputHtml = `
                     <input type="file" class="form-control" name="value">
-                    ${data.value ? `<br><a href="/uploads/${data.value}" target="_blank">View Current File</a>` : ''}
+                    ${data.value ? `<br><a href="${uploadsBase}/${String(data.value).replace(/^\/+/, '')}" target="_blank">View Current File</a>` : ''}
                 `;
                 break;
 
