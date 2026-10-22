@@ -1,0 +1,23 @@
+Options -Indexes
+RewriteEngine On
+
+# Preserve Authorization headers for API requests.
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# Block direct access to private application files.
+RewriteRule ^(app|bootstrap|config|database|resources|routes|tests|vendor)(/|$) - [F,L,NC]
+RewriteRule ^(\.env|artisan|composer\.(json|lock)|phpunit\.xml)(/|$) - [F,L,NC]
+
+# Public disk media: serve /storage/* from public/storage (symlink → storage/app/public)
+# so KYC/product images work without hitting Laravel (avoids broken admin thumbnails).
+RewriteCond %{DOCUMENT_ROOT}/public/storage/$1 -f
+RewriteRule ^storage/(.*)$ public/storage/$1 [L]
+
+# Serve other existing files from the public directory.
+RewriteCond %{REQUEST_URI} !^/storage/ [NC]
+RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+RewriteRule ^(.+)$ public/$1 [L]
+
+# Route all other requests to Laravel.
+RewriteRule ^ index.php [L]
