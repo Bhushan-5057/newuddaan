@@ -263,6 +263,7 @@ class InvestController extends Controller
             'tx_type' => $txType,
             'order_mrp' => $amount,
             'order_amount' => $amount,
+            'order_bv' => $amount,
             'package_name' => $pinDetail->pin_type,
             'roi' => $roiValue,
             'times' => 0,
@@ -352,21 +353,21 @@ class InvestController extends Controller
             $amount = $this->validateAndApplyCapping($sponsor->id, $calculatedIncome, $source);
 
             $directIncomeAmount = ($amount == -1) ? 0 : $amount;
-            $status = ($amount == -1) ? 3 : 0; // 3 for fully capped, 0 for Hold
-
 
             if ($directIncomeAmount > 0) {
                 $sponsorWallet = UserWallet::firstOrNew(['u_code' => $sponsor->id]);
                 $openingBalance = $sponsorWallet->c1 ?? 0;
                 $closingBalance = $openingBalance + $directIncomeAmount;
 
-                // $sponsorWallet->c1 = ($sponsorWallet->c1 ?? 0) + $directIncomeAmount;
-                // $sponsorWallet->c16 = ($sponsorWallet->c16 ?? 0) + $directIncomeAmount;
-                // $sponsorWallet->save();
-
                 $walletType = WalletType::where('wallet_column', 'c1')->first();
                 $incomeNameData = WalletType::where('slug', $source)->first();
                 $incomename = $incomeNameData->name ?? 'Direct Income';
+                // Credit Main Wallet + Reference/Direct income column from WalletType
+                $incomeColumn = $incomeNameData->wallet_column ?? 'c16';
+
+                $sponsorWallet->c1 = ($sponsorWallet->c1 ?? 0) + $directIncomeAmount;
+                $sponsorWallet->{$incomeColumn} = ($sponsorWallet->{$incomeColumn} ?? 0) + $directIncomeAmount;
+                $sponsorWallet->save();
 
                 // ૫. ટ્રાન્ઝેક્શન એન્ટ્રી
                 Transaction::create([
@@ -380,7 +381,7 @@ class InvestController extends Controller
                     'open_wallet'    => $openingBalance,
                     'closing_wallet' => $closingBalance,
                     'date'           => now(),
-                    'status'         => $status,
+                    'status'         => 1,
                     'remark'         => "30% $incomename from " . ucfirst($txType) . " of user " . $receiver->username . " (Amount: $packageAmount) on " . now(),
                     'added_on'       => now(),
                 ]);
@@ -590,6 +591,7 @@ class InvestController extends Controller
                 'tx_type' => $txType,
                 'order_mrp' => $amount,
                 'order_amount' => $amount,
+                'order_bv' => $amount,
                 'package_name' => $pinDetail->pin_type,
                 'roi' => $txType == 'retopup' ? 0.30 : $roiValue,
                 'times' => 0,
@@ -806,6 +808,7 @@ public function productHistoryData(Request $request)
             'order_mrp' => $request->amount,
             'tx_hash' => $request->tx_hash,
             'order_amount' => $request->amount,
+            'order_bv' => $request->amount,
             'package_name' => $pinDetail->pin_type,
             'roi' => $txType == 'retopup' ? 0.30 : $roiValue,
             'times' => 0,

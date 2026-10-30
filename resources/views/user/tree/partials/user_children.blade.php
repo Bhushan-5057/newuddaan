@@ -1,7 +1,7 @@
 {{--
-    In-place expand under a clicked left/right member.
-    Opens config(tree.drilldown_levels) levels on THAT side only (onlyPosition).
-    The opposite slot still shows Null/Register so the binary layout stays.
+    In-place expand under a clicked member.
+    Opens config(tree.drilldown_levels) levels on BOTH left and right.
+    Null/Register only when that side has no real child.
 --}}
 @php
     $treeNodes = $treeNodes ?? [];
@@ -9,21 +9,14 @@
     $treeChildren = $treeChildren ?? [];
     $treeMaxLevel = max(1, (int) ($treeMaxLevel ?? 3));
     $childMaxLevel = max(0, $treeMaxLevel - 1);
-    $onlyPosition = isset($onlyPosition) ? (int) $onlyPosition : null;
-    if ($onlyPosition !== 1 && $onlyPosition !== 2) {
-        $onlyPosition = null;
-    }
     $slots = $treeChildren[(int) $parent->id] ?? [];
     $leftChild = isset($slots[1]) ? ($treeNodes[$slots[1]] ?? null) : null;
     $rightChild = isset($slots[2]) ? ($treeNodes[$slots[2]] ?? null) : null;
     $rootUsername = auth()->user()->username;
 @endphp
 <ul class="is-loaded active">
-    {{-- Always draw both slots; onlyPosition data means the other side is Null. --}}
     <li>
-        @if ($leftChild && ($onlyPosition === null || $onlyPosition === 1))
-            {{-- onlyPosition null in the node so both L/R slots draw; data is
-                 already filtered to the clicked side, so the other slot is Null. --}}
+        @if ($leftChild)
             @include('user.tree.partials.user_node', [
                 'user' => $leftChild,
                 'level' => 0,
@@ -51,7 +44,7 @@
         @endif
     </li>
     <li>
-        @if ($rightChild && ($onlyPosition === null || $onlyPosition === 2))
+        @if ($rightChild)
             @include('user.tree.partials.user_node', [
                 'user' => $rightChild,
                 'level' => 0,

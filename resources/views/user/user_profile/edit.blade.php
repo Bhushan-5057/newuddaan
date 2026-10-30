@@ -79,42 +79,6 @@
                         </div>
 
                         <!-- ============================================ -->
-                        <!-- Username UPDATE SECTION                   -->
-                        <!-- ============================================ -->
-                        <div class="row">
-                            <div class="col-12">
-                                <hr>
-                                <h5 class="mt-2 mb-3">
-                                    <i class="bx bx-user-pin me-1"></i> Update Username
-                                </h5>
-                                <p class="text-muted small">Your Username is used as your public identifier. Choose something memorable.</p>
-                            </div>
-
-                            <div class="mb-3 col-md-6">
-                                <label class="form-label">Current Username</label>
-                                <input type="text" class="form-control" value="{{ $user->unique_name }}" disabled readonly style="background-color: #173538;">
-                            </div>
-
-                            <div class="mb-3 col-md-6">
-                                <label class="form-label">New Username</label>
-                                <input type="text" 
-                                    id="unique_name" 
-                                    name="unique_name" 
-                                    class="form-control @error('unique_name') is-invalid @enderror" 
-                                    placeholder="Enter new Username" 
-                                    value="{{ old('unique_name') }}"
-                                    autocomplete="off"
-                                    minlength="2"
-                                    maxlength="255">
-                                <div id="uniqueNameFeedback" class="mt-1 passwordValidation"></div>
-                                <small class="text-muted">Minimum 2 characters. Must be unique across all users.</small>
-                                @error('unique_name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <!-- ============================================ -->
                         <!-- PERSONAL / CONTACT / ADDRESS / NOMINEE      -->
                         <!-- plus read-only KYC and sponsor blocks       -->
                         <!-- ============================================ -->
@@ -313,6 +277,28 @@
         document.getElementById('upload').value = null;
     }
 
+    // Live preview when a new profile image is selected
+    (function () {
+        const uploadInput = document.getElementById('upload');
+        const avatar = document.getElementById('uploadedAvatar');
+        if (!uploadInput || !avatar) return;
+
+        uploadInput.addEventListener('change', function () {
+            const file = this.files && this.files[0];
+            if (!file) return;
+            if (!file.type.match(/^image\//)) {
+                alert('Please select an image file (JPG, PNG or GIF).');
+                this.value = null;
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                avatar.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    })();
+
     // Toggle password visibility function
     function togglePasswordVisibility(inputId, element) {
         const input = document.getElementById(inputId);
@@ -325,60 +311,6 @@
             input.type = 'password';
             icon.className = 'bx bx-show';
         }
-    }
-
-    // ==========================================================
-    // Live AJAX: Username availability
-    // ==========================================================
-    let uniqueNameTimer = null;
-    const uniqueNameInput = document.getElementById('unique_name');
-    const feedbackDiv = document.getElementById('uniqueNameFeedback');
-
-    if (uniqueNameInput) {
-        const currentUniqueName = "{{ $user->unique_name }}";
-        
-        uniqueNameInput.addEventListener('keyup', function () {
-            const val = this.value.trim();
-            clearTimeout(uniqueNameTimer);
-            
-            if (val === '') {
-                feedbackDiv.innerHTML = '';
-                return;
-            }
-            
-            if (val.length < 2) {
-                feedbackDiv.innerHTML = '<span class="text-warning">Name must be at least 2 characters long.</span>';
-                return;
-            }
-
-            // If the value is the same as current, show info message
-            if (val === currentUniqueName) {
-                feedbackDiv.innerHTML = '<span class="text-info">This is your current Username.</span>';
-                return;
-            }
-            
-            uniqueNameTimer = setTimeout(function () {
-                $.ajax({
-                    url: "{{ route('auth.checkUniqueName') }}",
-                    type: "GET",
-                    data: { unique_name: val },
-                    success: function (res) {
-                        feedbackDiv.innerHTML = 
-                            `<span class="${res.available ? 'text-success' : 'text-danger'}">${res.message}</span>`;
-                    },
-                    error: function() {
-                        feedbackDiv.innerHTML = '<span class="text-danger">Error checking availability</span>';
-                    }
-                });
-            }, 350);
-        });
-
-        // Also check on focus if there's a value
-        uniqueNameInput.addEventListener('focus', function () {
-            if (this.value.trim()) {
-                this.dispatchEvent(new Event('keyup'));
-            }
-        });
     }
 
     // ==========================================================

@@ -50,12 +50,10 @@ class ProfileController extends Controller
             'name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z]+(?: [A-Za-z]+)*$/'],
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'unique_name' => 'nullable|string|min:2|max:255|unique:users,unique_name,' . $user->id,
 
             // --- Personal ---
-            // `mobile` is deliberately absent: it is the login/OTP number and
-            // is only changed by an admin. PAN, Aadhaar and the bank
-            // block are not here either - they belong to KYC.
+            // Contact number (login/OTP mobile) is editable from profile.
+            // PAN, Aadhaar and bank belong to KYC.
             'title' => 'nullable|string|max:20',
             // Name parts: letters only, no digits, no blank spaces.
             'first_name' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'],
@@ -75,7 +73,8 @@ class ProfileController extends Controller
             'city' => 'nullable|string|max:100',
             'pin_code' => 'nullable|digits_between:4,10',
 
-            // --- Extra contact numbers (digits only; Indian 10-digit mobile) ---
+            // --- Contact numbers (digits only; Indian 10-digit mobile) ---
+            'mobile' => ['required', 'regex:/^[6-9][0-9]{9}$/', 'unique:users,mobile,' . $user->id],
             'alternate_mobile' => ['nullable', 'regex:/^[6-9][0-9]{9}$/'],
             'std_code' => 'nullable|digits_between:2,6',
             'phone_number' => 'nullable|digits_between:5,15',
@@ -101,6 +100,8 @@ class ProfileController extends Controller
             'nominee_middle_name.regex' => 'Nominee middle name may contain letters only, without spaces or numbers.',
             'nominee_last_name.regex' => 'Nominee last name may contain letters only, without spaces or numbers.',
             'nominee_relation.regex' => 'Relation may contain letters only (no numbers).',
+            'mobile.regex' => 'Contact number must be a valid 10-digit Indian number starting with 6, 7, 8 or 9.',
+            'mobile.unique' => 'This contact number is already registered.',
             'alternate_mobile.regex' => 'Alternate mobile must be a valid 10-digit Indian number starting with 6, 7, 8 or 9.',
             'nominee_mobile.regex' => 'Nominee mobile must be a valid 10-digit Indian number starting with 6, 7, 8 or 9.',
             'phone_number.digits_between' => 'Phone number may contain digits only.',
@@ -139,7 +140,7 @@ class ProfileController extends Controller
             'title', 'first_name', 'middle_name', 'last_name', 'gender',
             'date_of_birth', 'marriage_anniversary', 'profession', 'nationality',
             'address', 'country', 'state', 'district', 'city', 'pin_code',
-            'alternate_mobile', 'std_code', 'phone_number',
+            'mobile', 'alternate_mobile', 'std_code', 'phone_number',
             'nominee_title', 'nominee_first_name', 'nominee_middle_name',
             'nominee_last_name', 'nominee_gender', 'nominee_email',
             'nominee_mobile', 'nominee_dob', 'nominee_relation',
@@ -151,25 +152,6 @@ class ProfileController extends Controller
             }
             $value = $data[$field];
             $user->{$field} = ($value === '' ? null : $value);
-        }
-
-        // Update Unique Name
-        if ($request->filled('unique_name')) {
-            $newUniqueName = trim($request->unique_name);
-            
-            if ($newUniqueName !== $user->unique_name) {
-                $exists = User::where('unique_name', $newUniqueName)
-                              ->where('id', '!=', $user->id)
-                              ->exists();
-                
-                if ($exists) {
-                    throw ValidationException::withMessages([
-                        'unique_name' => 'This unique name is already taken. Please choose another.',
-                    ]);
-                }
-                
-                $user->unique_name = $newUniqueName;
-            }
         }
 
         // Custom Fields

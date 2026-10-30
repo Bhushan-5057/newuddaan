@@ -82,8 +82,8 @@ class AuthController extends Controller
             // --- Base validation rules ---
             $rules = [
                 'title' => 'required|string|max:20',
-                'first_name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'],
-                'last_name' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'],
+                'first_name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z]+(?: [A-Za-z]+)*$/'],
+                'last_name' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+(?: [A-Za-z]+)*$/'],
                 'gender' => 'nullable|in:Male,Female,Other',
                 'state' => 'nullable|string|max:100',
                 'city' => 'nullable|string|max:100',
@@ -110,8 +110,8 @@ class AuthController extends Controller
                 'unique_name.required' => 'Please enter a unique name.',
                 'unique_name.min' => 'Name must be at least 2 characters long.',
                 'unique_name.unique' => 'This name is already taken. Please choose another.',
-                'first_name.regex' => 'First name may contain letters only, without spaces or numbers.',
-                'last_name.regex' => 'Last name may contain letters only, without spaces or numbers.',
+                'first_name.regex' => 'First name may contain letters and spaces only (no numbers or special characters).',
+                'last_name.regex' => 'Last name may contain letters and spaces only (no numbers or special characters).',
                 'pan.regex' => 'Please enter a valid PAN number (e.g. ABCDE1234F).',
                 'pan.unique' => 'This PAN number is already registered.',
                 'aadhaar.min' => 'Aadhaar number must be exactly 12 digits (e.g. 1234 5678 9012).',

@@ -970,12 +970,12 @@ $user = Auth::user();
     const minZoom = 0.6;
     const maxZoom = 1.8;
     // ------------------------------------------------------------------
-    // In-place expand / collapse (sponsor + top levels stay visible)
+    // Re-root on click (same 3-level UI as default)
     //
-    // Initial: sponsor + left + right only.
-    // Click left member: open THREE levels on the LEFT under them only.
-    // Click right member: open THREE levels on the RIGHT under them only.
-    // Opposite side stays Null/Register. Sponsor UI unchanged.
+    // Initial: logged-in sponsor on top + left/right.
+    // Click any left/right id: that id becomes the new top; previous sponsor
+    // disappears; left/right of that id show with the same level depth.
+    // Reset / first breadcrumb: back to original sponsor tree.
     // ------------------------------------------------------------------
     @php
         $treeRootPayload = [
@@ -990,6 +990,7 @@ $user = Auth::user();
 
     let treePath = @json($treePathPayload);
     let treeBusy = false;
+    let initialTreeHtml = '';
 
     function renderBreadcrumb() {
         const $bc = $('#treeBreadcrumb').empty();
@@ -1030,64 +1031,66 @@ $user = Auth::user();
         });
     }
 
-    // Keep the opened member in view — do not jump back to the sponsor.
-    function focusInScroller(el) {
-        const scroller = document.querySelector('.genealogy-scroll');
-        if (!scroller || !el) return;
-        const place = function () {
-            const sRect = scroller.getBoundingClientRect();
-            const rRect = el.getBoundingClientRect();
-            scroller.scrollLeft += (rRect.left + rRect.width / 2) - (sRect.left + sRect.width / 2);
-            scroller.scrollTop += (rRect.top + rRect.height / 2) - (sRect.top + sRect.height / 3);
-        };
-        place();
-        requestAnimationFrame(place);
-    }
-
-    function afterTreeChange(focusEl) {
+    function afterTreeChange() {
         clearForcedWidths();
         updateZoom();
         requestAnimationFrame(function () {
-            if (focusEl) {
-                focusInScroller(focusEl);
-            }
+            centerSponsor();
         });
     }
 
-    // Collapse every dynamically loaded branch under $scope (jQuery node).
-    function collapseLoaded($scope) {
-        $scope.find('ul.is-loaded').remove();
+    function restoreSponsorTree() {
+        if (initialTreeHtml) {
+            $('#genealogyTree').html(initialTreeHtml);
+        }
+        treePath = [{
+            id: TREE_ROOT.id,
+            username: TREE_ROOT.username,
+            name: TREE_ROOT.name
+        }];
+        renderBreadcrumb();
+        afterTreeChange();
+        showNotification('Back to your tree');
     }
 
-    function expandMember(id, $anchor, side) {
+    // Replace the whole tree: clicked member becomes the new top root.
+    function openAsRoot(id) {
         if (treeBusy) return;
+
+        const currentRootId = $('#genealogyTree .member-view-box').first().attr('data-user-id');
+        if (String(id) === String(currentRootId)) {
+            return;
+        }
+
+        // Jumping back to the logged-in sponsor restores the original markup.
+        if (String(id) === String(TREE_ROOT.id)) {
+            restoreSponsorTree();
+            return;
+        }
+
         treeBusy = true;
         $('#treeLoading').prop('hidden', false);
 
-        const params = { id: id };
-        if (side === 1 || side === 2 || side === '1' || side === '2') {
-            params.side = side;
-        }
-
-        $.getJSON(TREE_FETCH_URL, params)
+        $.getJSON(TREE_FETCH_URL, { id: id })
             .done(function(res) {
                 if (!res.html) {
                     showNotification('No downline to open');
                     return;
                 }
-                // Insert that side's 3 levels under the clicked member; sponsor stays.
-                $anchor.after(res.html);
+                $('#genealogyTree').html(res.html);
                 if (res.root) {
-                    const last = treePath.length ? treePath[treePath.length - 1] : null;
-                    if (!last || String(last.id) !== String(res.root.id)) {
+                    const idx = treePath.findIndex(function(n) {
+                        return String(n.id) === String(res.root.id);
+                    });
+                    if (idx >= 0) {
+                        treePath = treePath.slice(0, idx + 1);
+                    } else {
                         treePath = treePath.concat([res.root]);
-                        renderBreadcrumb();
                     }
+                    renderBreadcrumb();
                 }
                 renderHiddenNote(res.hidden);
-                const focusBox = $anchor.find('.member-view-box').get(0)
-                    || $anchor.next('ul').find('.member-view-box').get(0);
-                afterTreeChange(focusBox);
+                afterTreeChange();
                 showNotification('Opened ' + (res.root ? res.root.username : 'member'));
             })
             .fail(function(xhr) {
@@ -1103,12 +1106,13 @@ $user = Auth::user();
     }
 
     $(document).ready(function() {
+        initialTreeHtml = $('#genealogyTree').html();
 
         renderBreadcrumb();
         centerSponsor();
         $(window).on('resize', centerSponsor);
 
-        // Expand under the clicked left/right member; keep sponsor + upper UI.
+        // Click left/right id → that id becomes the new top (sponsor disappears).
         $(document).on('click', '#genealogyTree .member-view-box', function(e) {
             if ($(e.target).closest('.copy-username, .register-link, .copy-link').length) {
                 return;
@@ -1119,83 +1123,20 @@ $user = Auth::user();
             const id = $(this).attr('data-user-id') || $(this).data('user-id');
             if (!id) return;
 
-            const $anchor = $(this).closest('a');
-            const $nextUl = $anchor.next('ul');
-
-            // Already expanded dynamically → collapse this branch.
-            if ($nextUl.length && $nextUl.hasClass('is-loaded')) {
-                $nextUl.remove();
-                const keepUntil = treePath.findIndex(function(n) { return String(n.id) === String(id); });
-                if (keepUntil >= 0) {
-                    treePath = treePath.slice(0, keepUntil + 1);
-                }
-                renderBreadcrumb();
-                afterTreeChange($(this).get(0));
-                showNotification('Collapsed');
-                return;
-            }
-
-            // Sponsor (or any node with server-rendered children) already shows
-            // left/right. Collapse only deeper dynamic opens under it.
-            if ($nextUl.length && !$nextUl.hasClass('is-loaded')) {
-                const hadDeep = $nextUl.find('ul.is-loaded').length > 0;
-                collapseLoaded($nextUl);
-                if (hadDeep) {
-                    treePath = treePath.slice(0, 1);
-                    renderBreadcrumb();
-                    afterTreeChange($(this).get(0));
-                    showNotification('Collapsed lower levels');
-                    return;
-                }
-                // Initial children already visible — leave sponsor UI as-is.
-                return;
-            }
-
-            // Left or right leaf → open 3 levels on that side only.
-            const side = $(this).attr('data-side') || $(this).data('side') || '';
-            expandMember(id, $anchor, side);
+            openAsRoot(id);
         });
 
-        // Breadcrumb: collapse everything below that member; tree stays rooted.
+        // Breadcrumb: re-open that member as the top root (or restore sponsor).
         $(document).on('click', '.tree-crumb', function() {
             if ($(this).hasClass('is-current')) return;
             const crumbId = String($(this).attr('data-id') || $(this).data('id'));
-            const $box = $('#genealogyTree .member-view-box[data-user-id="' + crumbId + '"]');
-            if (!$box.length) {
-                $('#genealogyTree ul.is-loaded').remove();
-                treePath = treePath.slice(0, 1);
-                renderBreadcrumb();
-                centerSponsor();
-                return;
-            }
-            const $anchor = $box.closest('a');
-            const $ul = $anchor.next('ul');
-            if ($ul.length) {
-                if ($ul.hasClass('is-loaded')) {
-                    $ul.remove();
-                } else {
-                    collapseLoaded($ul);
-                }
-            }
-            const idx = treePath.findIndex(function(n) { return String(n.id) === crumbId; });
-            if (idx >= 0) {
-                treePath = treePath.slice(0, idx + 1);
-            }
-            renderBreadcrumb();
-            afterTreeChange($box.get(0));
+            if (!crumbId) return;
+            openAsRoot(crumbId);
         });
 
         $('#resetTree').on('click touchstart', function(e) {
             e.preventDefault();
-            $('#genealogyTree ul.is-loaded').remove();
-            treePath = [{
-                id: TREE_ROOT.id,
-                username: TREE_ROOT.username,
-                name: TREE_ROOT.name
-            }];
-            renderBreadcrumb();
-            centerSponsor();
-            showNotification('Back to your tree');
+            restoreSponsorTree();
         });
         $('#zoomIn').on('click touchstart', function(e) {
             e.preventDefault();

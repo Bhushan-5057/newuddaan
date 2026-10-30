@@ -1129,6 +1129,7 @@ Route::post('/admin/check-user', [AdminOrderController::class, 'checkUser'])->na
     Route::get('/admin/product-orders-data/{status}', [AdminOrderController::class, 'productOrderData'])->name('admin.product.orders.data');
     Route::get('/admin/orders/view/{id}', [AdminOrderController::class, 'productviewOrder'])->name('admin.productorders.view');
     Route::post('/admin/orders/update-status/{id}', [AdminOrderController::class, 'productupdateStatus'])->name('admin.productorders.update_status');
+    Route::delete('/admin/orders/delete/{id}', [AdminOrderController::class, 'productDeleteOrder'])->name('admin.productorders.delete');
 
 
     Route::prefix('admin')->middleware('admin.session')->group(function () {

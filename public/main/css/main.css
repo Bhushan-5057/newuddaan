@@ -210,6 +210,7 @@ button:focus {
 .section-heading {
   text-align: center;
   margin-bottom: 40px;
+  margin-top: 50px;
 }
 
 .section-btn-50 {
@@ -6107,8 +6108,9 @@ tbody tr td:last-child {
 
 .footer-bottom {
   margin-top: 75px;
+  margin-bottom: 25px;
   padding: 20px 35px 15px;
-  border-radius: 8px 8px 0px 0px;
+  border-radius: 8px;
   background: var(--primary);
   border-top: 1px solid var(--border);
   display: -webkit-box;
@@ -6117,14 +6119,18 @@ tbody tr td:last-child {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
-  -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  text-align: center;
 }
 
 .footer-copytext {
   font-size: 15px;
   color: var(--white);
+  text-align: center;
+  margin: 0;
+  width: 100%;
 }
 
 .footer-copytext a {

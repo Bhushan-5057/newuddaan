@@ -62,8 +62,8 @@
                     <div class="col-md-6 text-md-end">
                         <h5 class="mb-0">{{ company_info('company_name') }}</h5>
                         <small class="text-muted d-block">{{ company_info('company_email') }}</small>
-                        @if(company_info('gst_no'))
-                            <small class="text-muted d-block">GSTIN: {{ company_info('gst_no') }}</small>
+                        @if(company_info('company_gst'))
+                            <small class="text-muted d-block">GSTIN: {{ company_info('company_gst') }}</small>
                         @endif
                     </div>
                 </div>
@@ -73,9 +73,12 @@
                 <!-- Action Buttons (Top) -->
                 <div class="row mb-3">
                     <div class="col-12 text-end">
-                 
-                          <a href="{{ route('admin.orders.print-invoice', $order->id) }}" class="btn btn-sm btn-success">  <i class="bx bx-printer me-1"></i> Download Invoice & Print </a>
-                    
+                        <button type="button" onclick="downloadPDF()" class="btn btn-sm btn-success">
+                            <i class="bx bx-printer me-1"></i> Download Invoice
+                        </button>
+                        <button type="button" onclick="printInvoice()" class="btn btn-sm btn-outline-success">
+                            <i class="bx bx-printer me-1"></i> Print
+                        </button>
                         <a href="{{ route('dashboard.user') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left me-1"></i> Back
                         </a>

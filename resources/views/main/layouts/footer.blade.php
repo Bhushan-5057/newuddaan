@@ -156,12 +156,6 @@
                         &copy; All Copyrights Reserved by
                         <a href="{{ route('home') }}">{{ company_info('company_name') }}</a>
                     </p>
-                    <!--<div class="footer-card">-->
-                    <!--    <a href="#"><img src="{{ asset('main/images/payment/jpg/01.jpg') }}" alt="payment"></a>-->
-                    <!--    <a href="#"><img src="{{ asset('main/images/payment/jpg/02.jpg') }}" alt="payment"></a>-->
-                    <!--    <a href="#"><img src="{{ asset('main/images/payment/jpg/03.jpg') }}" alt="payment"></a>-->
-                    <!--    <a href="#"><img src="{{ asset('main/images/payment/jpg/04.jpg') }}" alt="payment"></a>-->
-                    <!--</div>-->
                 </div>
             </div>
         </div>

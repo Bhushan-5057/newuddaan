@@ -83,13 +83,14 @@ class DashboardController extends Controller
         // Wallets
         $teamwallets = WalletType::where('wallet_type', 'team')->where('status', true)->where($RegistrationType, true)->get();
         $wallets = WalletType::where('wallet_type', 'wallet')->where('status', true)->get();
-        // Dashboard card order: Active Bonus → Matching → Bonanza → Reference,
+        // Dashboard cards: Active Bonus → Matching → Reference,
         // then Total Income (blade) → My Wallet (wallets loop).
         // Always include Reference Income (slug=direct) when status=1 even if the
-        // reg_type column flag is off — live DB had generation=0 and dropped the 6th card.
-        $incomeCardOrder = ['reward', 'binary', 'bonanza', 'direct'];
+        // reg_type column flag is off — live DB had generation=0 and dropped the card.
+        $incomeCardOrder = ['reward', 'binary', 'direct'];
         $incometype = WalletType::where('wallet_type', 'income')
             ->where('status', true)
+            ->whereIn('slug', $incomeCardOrder)
             ->where(function ($q) use ($RegistrationType) {
                 $q->where($RegistrationType, '1')
                     ->orWhere('slug', 'direct');
@@ -208,7 +209,10 @@ class DashboardController extends Controller
 
         $totalincomegss = Transaction::where('u_code', $userId)
             ->where('tx_type', 'income')
-            ->whereIn('source', ['roi', 'level', 'reward', 'royalty', 'stake_level', 'direct', 'binary'])
+            ->whereIn('source', [
+                'roi', 'level', 'reward', 'royalty', 'stake_level', 'direct', 'binary',
+                'binary_topup', 'binary_retopup',
+            ])
             ->sum('amount');
 
         $packageAmount = Order::where('tx_user_id', $userId)
@@ -623,7 +627,7 @@ foreach ($txTypes as $type) {
         $user = auth()->user();
         $query = Transaction::where('u_code', $user->id)
             ->where('debit_credit', 'credit') // Filter only earnings
-            ->where('source', 'binary')
+            ->whereIn('source', ['binary', 'binary_topup', 'binary_retopup'])
             ->where('tx_type', 'income')
             ->latest('added_on')
             ->take(4);

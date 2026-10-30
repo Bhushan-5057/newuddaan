@@ -110,9 +110,14 @@
 <h5 class="mt-2 mb-3"><i class="bx bx-phone me-1"></i> Contact</h5>
 <div class="row">
     <div class="mb-3 col-md-4">
-        <label class="form-label">Mobile</label>
-        <input type="text" class="form-control" value="{{ $user->mobile }}" disabled readonly>
-        <small class="text-muted">Login &amp; OTP number &mdash; contact support to change it.</small>
+        <label class="form-label" for="mobile">Contact Number</label>
+        <input type="text" id="mobile" name="mobile" inputmode="numeric"
+               class="form-control js-indian-mobile @error('mobile') is-invalid @enderror"
+               pattern="[6-9][0-9]{9}" maxlength="10" minlength="10"
+               title="10-digit Indian mobile starting with 6, 7, 8 or 9"
+               value="{{ old('mobile', $user->mobile) }}">
+        @error('mobile')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        <small class="text-muted">Used for login &amp; OTP. Enter a valid 10-digit number.</small>
     </div>
 
     <div class="mb-3 col-md-4">

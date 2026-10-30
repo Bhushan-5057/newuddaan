@@ -224,7 +224,7 @@
 <!--=====================================
             SUGGEST PART START
 =======================================-->
-<section class="section suggest-part mt-5">
+<!-- <section class="section suggest-part mt-5">
     <div class="container">
 
 
@@ -261,7 +261,7 @@
 
 
     </div>
-</section>
+</section> -->
 <!--=====================================
             SUGGEST PART END
 =======================================-->
@@ -342,27 +342,6 @@
                     </div>
 
                 </section>
-
-
-        <!--=====================================
-                    PROMOTION PART START
-        =======================================-->
-        <div class="section promo-part">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="promo-img">
-                            <a href="#"><img src="{{ asset('main/images/promo/home/03.jpg') }}" alt="Promotional Banner - New Uddan International Herbal Products"></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!--=====================================
-                    PROMOTION PART END
-        =======================================-->
-
-
 
 
 <section class="section countdown-part">
@@ -503,47 +482,4 @@
 @endforeach
     </div>
 </section>
-
-
-
-
-
-        <!--=====================================
-                    PROMOTION PART START
-        =======================================-->
-        <!--<div class="section promo-part">-->
-        <!--    <div class="container">-->
-        <!--        <div class="row">-->
-        <!--            <div class="col-sm-12 col-md-6 col-lg-6 px-xl-3">-->
-        <!--                <div class="promo-img">-->
-        <!--                    <a href="#"><img src="{{ asset('main/images/promo/home/01.jpg') }}" alt="promo"></a>-->
-        <!--                </div>-->
-        <!--            </div>-->
-        <!--            <div class="col-sm-12 col-md-6 col-lg-6 px-xl-3">-->
-        <!--                <div class="promo-img">-->
-        <!--                    <a href="#"><img src="{{ asset('main/images/promo/home/02.jpg') }}" alt="promo"></a>-->
-        <!--                </div>-->
-        <!--            </div>-->
-        <!--        </div>-->
-        <!--    </div>-->
-        <!--</div>-->
-        <!--=====================================
-                    PROMOTION PART END
-        =======================================-->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             @endsection

@@ -44,18 +44,26 @@ class UserPayoutController extends Controller
         // Match "Withdrawal Charges 5%" 
         preg_match('/Withdrawal Charges\s+(\d+(\.\d+)?)%/i', $wdText, $chargeMatches);
 
-        // Set defaults if not matched
-        $minWithdrawal = isset($minMatches[1]) ? (float) $minMatches[1] : 50;
+        // Prefer AdvanceInfo min_withdrawal_limit (default 100), else wd_conditions text
+        $minFromSetting = AdvanceInfo::where('label', 'min_withdrawal_limit')->value('value');
+        $minWithdrawal = $minFromSetting !== null && $minFromSetting !== ''
+            ? (float) $minFromSetting
+            : (isset($minMatches[1]) ? (float) $minMatches[1] : 100);
         $chargeAmount = isset($chargeMatches[1]) ? (float) $chargeMatches[1] : 1;
 
         $kycBank = KycDetail::where('user_id', $userId)
             ->where('kyc_status_bank', 'approved')
             ->first();
 
+        $kycIdentity = KycDetail::where('user_id', $userId)
+            ->where('kyc_status_identity', 'approved')
+            ->first();
 
         $wallets = WalletType::where('wallet_type', 'wallet')->where('status', true)->where('slug', 'main_wallet')->get();
         $userWallet = UserWallet::where('u_code', auth()->id())->first();
-        return view('user.withdrawal.payout', compact('wallets', 'userWallet', 'minWithdrawal', 'chargeAmount', 'wdText', 'maxLimit', 'kycBank'));
+        return view('user.withdrawal.payout', compact(
+            'wallets', 'userWallet', 'minWithdrawal', 'chargeAmount', 'wdText', 'maxLimit', 'kycBank', 'kycIdentity'
+        ));
     }
 
     public function store(Request $request)
@@ -136,7 +144,7 @@ class UserPayoutController extends Controller
         ];
 
         // 6️⃣ Validate withdrawal amount
-        $minWithdrawal = (float)(AdvanceInfo::where('label', 'min_withdrawal_limit')->value('value') ?? 10);
+        $minWithdrawal = (float)(AdvanceInfo::where('label', 'min_withdrawal_limit')->value('value') ?? 100);
         $maxLimit      = (float)(AdvanceInfo::where('label', 'max_withdrawal_limit')->value('value') ?? 2500);
 
         $request->validate([

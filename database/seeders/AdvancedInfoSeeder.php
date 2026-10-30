@@ -283,7 +283,7 @@ class AdvancedInfoSeeder extends Seeder
                 'type' => 'text',
                 'options' => '{"fix":"fix"}',
                 'image' => '',
-                'value' => '10',
+                'value' => '100',
                 'status' => 1,
                 'admin_status' => 1,
                 'added_on' => '2019-07-22 13:22:26',

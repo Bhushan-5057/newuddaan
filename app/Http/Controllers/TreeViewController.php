@@ -102,8 +102,9 @@ public function showTree()
 }
 
 /**
- * In-place expand: open N levels under the clicked member (default 3).
- * Sponsor and upper members stay on screen; HTML is inserted under the click.
+ * Re-root the tree on a clicked member: that member becomes the top node
+ * (same render_levels UI as the default sponsor view). Left/right Null only
+ * when that side is empty.
  */
 public function fetchSubTree(Request $request)
 {
@@ -127,21 +128,19 @@ public function fetchSubTree(Request $request)
         return response()->json(['message' => 'Member not found.'], 404);
     }
 
-    // Three levels under the clicked member, on that member's side only.
-    // Click left → follow position 1 only; click right → position 2 only.
-    // The other side still renders as Null/Register in the partial.
+    // Clicked member becomes top; open three levels below (existing drilldown).
     $maxLevel = max(1, (int) config('tree.drilldown_levels', 3));
-    $side = (int) $request->query('side');
-    $onlyPosition = in_array($side, [1, 2], true) ? $side : null;
-    [$treeNodes, $treeBv, $treeChildren] = $this->visibleTreeData($target, $maxLevel, $onlyPosition);
+    [$treeNodes, $treeBv, $treeChildren] = $this->visibleTreeData($target, $maxLevel, null);
 
-    $html = view('user.tree.partials.user_children', [
-        'parent' => $target,
+    // Render clicked member as the new top root (existing user_node partial).
+    $html = view('user.tree.partials.user_node', [
+        'user' => $target,
+        'level' => 0,
+        'treeMaxLevel' => $maxLevel,
         'treeNodes' => $treeNodes,
         'treeBv' => $treeBv,
         'treeChildren' => $treeChildren,
-        'treeMaxLevel' => $maxLevel,
-        'onlyPosition' => $onlyPosition,
+        'onlyPosition' => null,
     ])->render();
 
     return response()->json([

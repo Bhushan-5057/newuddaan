@@ -29,10 +29,9 @@
                 </div>
 
                 <div>
-                    <a href="{{ route('admin.orders.print-invoice', $order->id) }}" 
-                       target="_blank" 
+                    <a href="{{ route('order.invoice', $order->tx_id) }}"
                        class="btn btn-sm btn-success">
-                        <i class="bx bx-printer me-1"></i> 📄 Invoice
+                        <i class="bx bx-printer me-1"></i> Invoice
                     </a>
                 </div>
             </div>

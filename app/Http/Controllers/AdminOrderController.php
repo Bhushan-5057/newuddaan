@@ -172,8 +172,15 @@ class AdminOrderController extends Controller
             })
 
             ->addColumn('action', function ($row) {
+                $viewBtn = '<a href="' . route('admin.productorders.view', $row->id) . '" class="btn btn-sm btn-primary me-1">View</a>';
 
-                return '<a href="' . route('admin.productorders.view', $row->id) . '" class="btn btn-sm btn-primary">View</a>';
+                // Cancelled (3) / Returned (4) orders can be permanently deleted
+                if (in_array((int) $row->status, [3, 4], true)) {
+                    $deleteUrl = route('admin.productorders.delete', $row->id);
+                    $viewBtn .= '<button type="button" class="btn btn-sm btn-danger btn-delete-order" data-url="' . $deleteUrl . '">Delete</button>';
+                }
+
+                return $viewBtn;
             })
 
             ->editColumn('added_on', function ($row) {
@@ -214,6 +221,48 @@ class AdminOrderController extends Controller
 
 
         return view('admin.orders.productview', compact('order'));
+    }
+
+    /**
+     * Permanently delete a cancelled/returned product order and its items.
+     */
+    public function productDeleteOrder($id)
+    {
+        $order = Order::findOrFail($id);
+
+        if (!in_array((int) $order->status, [3, 4], true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only cancelled or returned orders can be deleted.',
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            OrderItem::where('order_id', $order->id)->delete();
+            $order->delete();
+            DB::commit();
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Order deleted successfully.',
+                ]);
+            }
+
+            return back()->with('success', 'Order deleted successfully.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to delete order.',
+                ], 500);
+            }
+
+            return back()->with('error', 'Failed to delete order.');
+        }
     }
 
 

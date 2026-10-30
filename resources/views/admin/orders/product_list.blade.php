@@ -88,6 +88,54 @@ order: [[6, 'desc']],
         $('.form-control').val(''); 
         table.draw(); 
     });
+
+    $(document).on('click', '.btn-delete-order', function () {
+        const url = $(this).data('url');
+        if (!url) return;
+
+        const doDelete = function () {
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    _method: 'DELETE',
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function (res) {
+                    table.draw(false);
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire('Deleted', (res && res.message) ? res.message : 'Order deleted.', 'success');
+                    } else {
+                        alert((res && res.message) ? res.message : 'Order deleted.');
+                    }
+                },
+                error: function (xhr) {
+                    const msg = (xhr.responseJSON && xhr.responseJSON.message)
+                        ? xhr.responseJSON.message
+                        : 'Failed to delete order.';
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire('Error', msg, 'error');
+                    } else {
+                        alert(msg);
+                    }
+                }
+            });
+        };
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Delete this order?',
+                text: 'Cancelled/returned order will be permanently removed.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete'
+            }).then(function (result) {
+                if (result.isConfirmed) doDelete();
+            });
+        } else if (confirm('Delete this cancelled/returned order permanently?')) {
+            doDelete();
+        }
+    });
 });
 </script>
 @endsection

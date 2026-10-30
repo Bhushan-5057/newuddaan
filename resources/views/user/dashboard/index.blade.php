@@ -34,6 +34,64 @@
             border: 1px solid;
             width: auto;
         }
+
+        .dash-stat-card {
+            min-height: 120px;
+        }
+
+        .dash-stat-card .card-body {
+            gap: 0.5rem;
+            overflow: visible;
+        }
+
+        .dash-stat-card .dash-stat-text {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .dash-stat-card .dash-stat-text h6,
+        .dash-stat-card .dash-stat-text h4 {
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        .dash-stat-icon {
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dash-stat-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            display: block;
+        }
+
+        @media (max-width: 1199.98px) {
+            .dash-stat-icon {
+                width: 58px;
+                height: 58px;
+                min-width: 58px;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .dash-stat-card {
+                min-height: 110px;
+            }
+
+            .dash-stat-icon {
+                width: 56px;
+                height: 56px;
+                min-width: 56px;
+            }
+        }
     </style>
 
     @if (session('showPopup') && $popupNotices->count())
@@ -65,33 +123,26 @@
                                 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
                                 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
                             ];
-                
-                            $icons = [
-                                asset('assets/icon/1.png'),
-                                asset('assets/icon/5.png'),
-                                asset('assets/icon/6.png'),
-                                asset('assets/icon/2.png'),
-                                asset('assets/icon/7.png'),
-                                asset('assets/icon/8.png'),
-                                asset('assets/icon/4.png'),
-                                asset('assets/icon/10.png'),
+
+                            // Match each income card with its dedicated icon asset
+                            $iconBySlug = [
+                                'reward' => asset('assets/icon/1.png'), // Active Bonus
+                                'binary' => asset('assets/icon/5.png'), // Matching Income
+                                'direct' => asset('assets/icon/4.png'), // Reference Income
                             ];
                 
                             $colorIndex = 0;
-                            $iconsIndex = 0;
                         @endphp
                 
-                        {{-- Dynamic Income Types --}}
+                        {{-- Dynamic Income Types (Active Bonus, Matching, Reference) --}}
                         @foreach ($incometype as $income)
                             @php
-                                $slug = $income->wallet_column;
                                 $source = $income->slug;
 
                                 $bgColor = $colors[$colorIndex % count($colors)];
                                 $colorIndex++;
 
-                                $icon = $icons[$iconsIndex % count($icons)];
-                                $iconsIndex++;
+                                $icon = $iconBySlug[$source] ?? asset('assets/icon/1.png');
 
                                 $amount = $userwallet->{$income->wallet_column} ?? 0;
 
@@ -101,7 +152,7 @@
                                 if ($isBinary) {
                                     $lastWeeklyIncome = \DB::table('transaction')
                                         ->where('u_code', auth()->id())
-                                        ->where('source', $source)
+                                        ->whereIn('source', ['binary', 'binary_topup', 'binary_retopup'])
                                         ->where('tx_type', 'income')
                                         ->latest('id')
                                         ->value('amount') ?? 0;
@@ -109,90 +160,78 @@
                             @endphp
 
                             <div class="col">
-                                <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden"
-                                    style="background: {{ $bgColor }}; min-height: 110px;">
+                                <div class="card dash-stat-card shadow-sm border-0 rounded-4 h-100"
+                                    style="background: {{ $bgColor }};">
                                     <div class="card-body d-flex justify-content-between align-items-center p-3">
-                                        <div class="pe-2 ">
+                                        <div class="dash-stat-text pe-2">
                                             <h6 class="mb-1 fw-semibold small" style="letter-spacing: 0.5px; opacity: 0.9;">
                                                 {{ strtoupper($income->name) }}
                                             </h6>
-                                            <h4 class="mb-0 fw-bold text-nowrap">
+                                            <h4 class="mb-0 fw-bold">
                                                 {{ company_info('currency', '₹') . ' ' . rtrim(rtrim(number_format($amount, 3, '.', ''), '0'), '.') }}
                                             </h4>
                                             
                                             @if($isBinary && $lastWeeklyIncome > 0)
-                                                <small class="d-block mt-1 text-nowrap" style="font-size: 0.75rem; opacity: 0.85;">
+                                                <small class="d-block mt-1" style="font-size: 0.75rem; opacity: 0.85;">
                                                     <i class="fa-solid fa-clock-rotate-left me-1"></i>
                                                     Last Week Income: {{ company_info('currency', '₹') . ' ' . rtrim(rtrim(number_format($lastWeeklyIncome, 3, '.', ''), '0'), '.') }}
                                                 </small>
                                             @endif
                                         </div>
 
-                                        <div class="flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                            <img src="{{ $icon }}" alt="icon" style="width: 100%; height: 100%; object-fit: contain;">
+                                        <div class="dash-stat-icon">
+                                            <img src="{{ $icon }}" alt="{{ $income->name }}">
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         @endforeach
                         
-                        @php
-                            $colorIndex = 0; 
-                            $walletIcons = [
-                                'main_wallet' => 'fa-solid fa-wallet',
-                                'roi_wallet' => 'fa-solid fa-sack-dollar',
-                                'level_wallet' => 'fa-solid fa-users',
-                                'salary_wallet' => 'fa-solid fa-briefcase',
-                                'reward_wallet' => 'fa-solid fa-gift',
-                            ];
-                        @endphp
-                        
                         {{-- Total Income Card --}}
                         <div class="col">
-                            <div class="card shadow-sm border-0 rounded-4 h-100  overflow-hidden"
-                                style="background: linear-gradient(135deg, #141e30 0%, #243b55 100%); min-height: 110px;">
+                            <div class="card dash-stat-card shadow-sm border-0 rounded-4 h-100"
+                                style="background: linear-gradient(135deg, #141e30 0%, #243b55 100%);">
                                 <div class="card-body d-flex justify-content-between align-items-center p-3">
-                                    <div class="pe-2">
-                                        <h6 class="mb-1  fw-semibold small" style="letter-spacing: 0.5px;">
+                                    <div class="dash-stat-text pe-2">
+                                        <h6 class="mb-1 fw-semibold small" style="letter-spacing: 0.5px;">
                                             TOTAL INCOME
                                         </h6>
-                                        <h4 class="mb-0 fw-bold text-nowrap">
+                                        <h4 class="mb-0 fw-bold">
                                             {{ company_info('currency', '₹') }} {{ rtrim(rtrim(number_format($totalincomegss, 3, '.', ''), '0'), '.') }}
                                         </h4>
                                     </div>
                 
-                                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center  bg-opacity-25 rounded-3 p-2" style="width: 50px; height: 50px;">
-                                        <i class="fa-solid fa-chart-line fs-3 "></i>
+                                    <div class="dash-stat-icon">
+                                        <img src="{{ asset('assets/icon/7.png') }}" alt="Total Income">
                                     </div>
                                 </div>
                             </div>
                         </div>
                 
-                        {{-- Dynamic Wallets --}}
+                        {{-- My Wallet --}}
                         @if (auth()->user()->hasPermission('Wallets', 'can_view'))
                             @foreach ($wallets as $wallet)
                                 @php
                                     $walletValue = $userwallet->{$wallet->wallet_column} ?? 0;
                                     $bgColor = $colors[$colorIndex % count($colors)];
                                     $colorIndex++;
-                                    $iconClass = $walletIcons[$wallet->wallet_column] ?? 'fa-solid fa-coins';
                                 @endphp
                 
                                 <div class="col">
-                                    <div class="card shadow-sm border-0 rounded-4 h-100  overflow-hidden"
-                                        style="background: {{ $bgColor }}; min-height: 110px;">
+                                    <div class="card dash-stat-card shadow-sm border-0 rounded-4 h-100"
+                                        style="background: {{ $bgColor }};">
                                         <div class="card-body d-flex justify-content-between align-items-center p-3">
-                                            <div class="pe-2">
-                                                <h6 class="mb-1  fw-semibold small" style="letter-spacing: 0.5px;">
+                                            <div class="dash-stat-text pe-2">
+                                                <h6 class="mb-1 fw-semibold small" style="letter-spacing: 0.5px;">
                                                     {{ strtoupper($wallet->name) }}
                                                 </h6>
-                                                <h4 class="mb-0 fw-bold text-nowrap">
+                                                <h4 class="mb-0 fw-bold">
                                                     {{ company_info('currency', '₹') }} {{ rtrim(rtrim(number_format($walletValue, 3, '.', ''), '0'), '.') }}
                                                 </h4>
                                             </div>
                 
-                                            <div class="flex-shrink-0 d-flex align-items-center justify-content-center  bg-opacity-25 rounded-3 p-2" style="width: 50px; height: 50px;">
-                                                <i class="{{ $iconClass }} fs-3 "></i>
+                                            <div class="dash-stat-icon">
+                                                <img src="{{ asset('assets/icon/10.png') }}" alt="{{ $wallet->name }}">
                                             </div>
                                         </div>
                                     </div>
@@ -262,15 +301,6 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class=" opacity-75 small fw-semibold">
-                                           Username
-                                        </div>
-                                        <div class=" small">
-                                            {{ Auth::user()->unique_name }}
-                                        </div>
-                                    </div>
-
                                     {{-- Status --}}
                                     @php
                                         // A package of at least 1 BV but under 100 counts as Pending:

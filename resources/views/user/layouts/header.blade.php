@@ -113,6 +113,151 @@
                 margin-left: 0px !important;
             }
         }
+
+        /* Keep logout always visible; do NOT lock main content scroll */
+        .app-wrapper > nav {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        .app-wrapper > nav > .app-logo {
+            flex-shrink: 0;
+        }
+
+        .app-wrapper > nav > .app-nav {
+            flex: 1 1 auto;
+            min-height: 0;
+            height: auto !important;
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .app-wrapper > nav > .sidebar-logout-pin {
+            flex-shrink: 0;
+            border-top: 1px solid rgba(var(--primary), 0.15);
+            background: rgba(var(--white), 1);
+            padding: 0.5rem 0.75rem 0.75rem;
+            z-index: 2;
+        }
+
+        .app-wrapper > nav > .sidebar-logout-pin a {
+            padding: 0.6rem 1rem;
+            font-weight: 500;
+            color: rgba(var(--dark), 1);
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            font-size: 16px;
+            text-decoration: none;
+            border-radius: 0.5rem;
+        }
+
+        /* Desktop collapsed: icons only, no label bleed */
+        @media (min-width: 768px) {
+            .app-wrapper .semi-nav:not(:hover) .sidebar-logout-pin a {
+                font-size: 0;
+                justify-content: center;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+
+            .app-wrapper .semi-nav:not(:hover) .sidebar-logout-pin .menu-icon-box,
+            .app-wrapper .semi-nav:not(:hover) .app-nav .menu-icon-box {
+                margin-right: 0;
+                font-size: 15px !important;
+            }
+
+            .app-wrapper .semi-nav:not(:hover) .app-nav .menu-title {
+                display: none;
+            }
+
+            .app-wrapper .semi-nav:not(:hover) .app-nav .main-nav > li:not(.menu-title) > a {
+                justify-content: center;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+                overflow: hidden;
+            }
+
+            .app-wrapper .semi-nav:not(:hover) .app-logo .nav-profile .flex-grow-1,
+            .app-wrapper .semi-nav:not(:hover) .app-logo .nav-profile .dropdown {
+                display: none;
+            }
+
+            .app-wrapper .semi-nav:hover .sidebar-logout-pin .menu-icon-box,
+            .app-wrapper nav:not(.semi-nav) .sidebar-logout-pin .menu-icon-box,
+            .app-wrapper .semi-nav:hover .app-nav .menu-icon-box,
+            .app-wrapper nav:not(.semi-nav) .app-nav .menu-icon-box {
+                margin-right: 10px;
+                font-size: 15px !important;
+            }
+        }
+
+        /* Mobile (matches theme): no semi-nav = closed; semi-nav = full drawer open.
+           Keep labels + icons visible; never use the desktop icon-rail collapse. */
+        @media (max-width: 767.98px) {
+            .app-wrapper > nav:not(.semi-nav) {
+                width: 0 !important;
+                overflow: hidden !important;
+                pointer-events: none;
+            }
+
+            .app-wrapper > nav.semi-nav,
+            .app-wrapper > nav.semi-nav:hover {
+                width: calc(var(--sidebar-width) - 1rem) !important;
+                max-width: 90vw;
+                overflow: hidden;
+                pointer-events: auto;
+                z-index: 1100;
+            }
+
+            .app-wrapper .app-content,
+            .app-wrapper .semi-nav ~ .app-content {
+                padding-left: 0 !important;
+            }
+
+            .app-wrapper .app-content header.header-main,
+            .app-wrapper .semi-nav ~ .app-content header.header-main {
+                padding-left: 0 !important;
+            }
+
+            /* Full labels whenever the mobile drawer is open */
+            .app-wrapper > nav.semi-nav .app-nav .main-nav li a,
+            .app-wrapper > nav.semi-nav .sidebar-logout-pin a {
+                font-size: 16px !important;
+                text-align: left !important;
+                justify-content: flex-start !important;
+                overflow: hidden;
+            }
+
+            .app-wrapper > nav.semi-nav .menu-icon-box {
+                margin-right: 10px !important;
+                font-size: 15px !important;
+                flex-shrink: 0;
+            }
+
+            .app-wrapper > nav.semi-nav .app-nav .menu-title {
+                display: block !important;
+            }
+
+            .app-wrapper > nav.semi-nav .app-logo,
+            .app-wrapper > nav.semi-nav .app-logo .nav-profile {
+                width: 100% !important;
+                overflow: visible !important;
+            }
+
+            .app-wrapper > nav.semi-nav .app-logo .nav-profile .flex-grow-1,
+            .app-wrapper > nav.semi-nav .app-logo .nav-profile .dropdown {
+                display: block !important;
+            }
+
+            .app-wrapper > nav.semi-nav .sidebar-logout-pin {
+                width: 100%;
+            }
+        }
     </style>
     
     
@@ -257,11 +402,6 @@
                     </div>
 
                 </div>
-
-                <form id="logout-form" action="{{ route('user.logout') }}" method="POST" class="d-none">
-                    @csrf
-                </form>
-
 
             </div>
 
@@ -597,6 +737,25 @@
                     @endif
                     
                     
+                @if (auth()->user()->hasPermission('Withdrawal_view', 'can_view'))
+                        @php
+                            $payoutKycReady = \App\Models\KycDetail::where('user_id', auth()->id())
+                                ->where('kyc_status_identity', 'approved')
+                                ->where('kyc_status_bank', 'approved')
+                                ->exists();
+                        @endphp
+                        @if ($payoutKycReady)
+                        <li class="no-sub">
+                            <a href="{{ route('user.payout.index') }}">
+                                <span class="menu-icon-box success">
+                                    <i class="fa fa-wallet"></i>
+                                </span>
+                                Payout
+                            </a>
+                        </li>
+                        @endif
+                    @endif
+
                 @if (auth()->user()->hasPermission('Withdrawal Report', 'can_view'))
                         <li class="no-sub">
                             <a href="{{ route('user.withdrawals') }}">
@@ -646,23 +805,23 @@
                             </a>
                         </li>
                     @endif
-                    <li class="no-sub mb-5">
-                        <a href="{{ route('user.logout') }}"
-                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <span class="menu-icon-box danger">
-                                <i class="fa fa-sign-out"></i>
-                            </span>
-                            Logout
-                        </a>
-                    </li>
-
-                    <form id="logout-form" action="{{ route('user.logout') }}" method="POST" class="d-none">
-                        @csrf
-                    </form>
-
 
                 </ul>
             </div>
+
+            <div class="sidebar-logout-pin">
+                <a href="{{ route('user.logout') }}"
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <span class="menu-icon-box danger">
+                        <i class="fa fa-sign-out"></i>
+                    </span>
+                    Logout
+                </a>
+            </div>
+
+            <form id="logout-form" action="{{ route('user.logout') }}" method="POST" class="d-none">
+                @csrf
+            </form>
 
             <div class="menu-navs">
                 <span class="menu-previous"><i class="ti ti-chevron-left"></i></span>
