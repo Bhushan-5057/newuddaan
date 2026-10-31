@@ -39,7 +39,6 @@ class UserPayoutController extends Controller
 
         // Match "Minimum Withdrawal 10"
         preg_match('/Minimum Withdrawal\s+(\d+(\.\d+)?)/i', $wdText, $minMatches);
-        $maxLimit = (float)(AdvanceInfo::where('label', 'max_withdrawal_limit')->value('value') ?? 25000);
 
         // Match "Withdrawal Charges 5%" 
         preg_match('/Withdrawal Charges\s+(\d+(\.\d+)?)%/i', $wdText, $chargeMatches);
@@ -61,6 +60,11 @@ class UserPayoutController extends Controller
 
         $wallets = WalletType::where('wallet_type', 'wallet')->where('status', true)->where('slug', 'main_wallet')->get();
         $userWallet = UserWallet::where('u_code', auth()->id())->first();
+
+        // Max withdrawable = available My Wallet balance (not a fixed AdvanceInfo cap).
+        $walletColumn = optional($wallets->first())->wallet_column ?? 'c1';
+        $maxLimit = (float) ($userWallet->{$walletColumn} ?? 0);
+
         return view('user.withdrawal.payout', compact(
             'wallets', 'userWallet', 'minWithdrawal', 'chargeAmount', 'wdText', 'maxLimit', 'kycBank', 'kycIdentity'
         ));
@@ -143,18 +147,27 @@ class UserPayoutController extends Controller
             'front_image_bank'    => $kycBank->front_image_bank,
         ];
 
-        // 6️⃣ Validate withdrawal amount
+        // 6️⃣ Check wallet balance first — max = available My Wallet amount
+        $wallet = UserWallet::where('u_code', $userId)->first();
+        $walletColumn = WalletType::where('wallet_type', 'wallet')
+            ->where('status', true)
+            ->where('slug', 'main_wallet')
+            ->value('wallet_column') ?? 'c1';
+        $availableBalance = (float) ($wallet->{$walletColumn} ?? 0);
+
         $minWithdrawal = (float)(AdvanceInfo::where('label', 'min_withdrawal_limit')->value('value') ?? 100);
-        $maxLimit      = (float)(AdvanceInfo::where('label', 'max_withdrawal_limit')->value('value') ?? 2500);
+        // Cap at available My Wallet balance (no fixed 2500 / max_withdrawal_limit).
+        $maxLimit = max(0, $availableBalance);
 
         $request->validate([
             'amount' => "required|numeric|min:$minWithdrawal|max:$maxLimit",
+        ], [
+            'amount.max' => 'Withdrawal amount cannot exceed your available My Wallet balance of '
+                . number_format($maxLimit, 2) . '.',
         ]);
 
-        // 7️⃣ Check wallet balance
-        $wallet = UserWallet::where('u_code', $userId)->first();
-
-        if (!$wallet || $wallet->c1 < $request->amount) {
+        // 7️⃣ Re-check wallet balance (same column as My Wallet)
+        if (!$wallet || $availableBalance < $request->amount) {
             return back()->withErrors([
                 'amount' => 'Insufficient wallet balance.'
             ]);
@@ -174,9 +187,9 @@ class UserPayoutController extends Controller
 
         $finalPaid = $amount - $charge;
 
-        // 9️⃣ Deduct wallet balance
-        $oldBalance = $wallet->c1;
-        $wallet->c1 -= $amount;
+        // 9️⃣ Deduct My Wallet balance (same column used for available max)
+        $oldBalance = (float) ($wallet->{$walletColumn} ?? 0);
+        $wallet->{$walletColumn} = $oldBalance - $amount;
         $wallet->save();
 
         // 🔟 Store withdrawal transaction
@@ -194,7 +207,7 @@ class UserPayoutController extends Controller
             'status'         => 0,
             'remark'         => 'Withdrawal request submitted',
             'open_wallet'    => $oldBalance,
-            'closing_wallet' => $wallet->c1,
+            'closing_wallet' => $wallet->{$walletColumn},
             'request_amount' => $amount,
             'paidAmount'     => $finalPaid,
             'date'           => now(),

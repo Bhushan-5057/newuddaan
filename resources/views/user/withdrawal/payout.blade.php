@@ -112,8 +112,13 @@
                                        placeholder="e.g. {{ number_format($minWithdrawal, 2) }}" 
                                        required 
                                        min="{{ $minWithdrawal }}" 
+                                       max="{{ $maxLimit }}"
                                        step="0.01">
                             </div>
+                            <small class="text-muted d-block mt-1">
+                                You can withdraw up to your available My Wallet balance:
+                                {{ company_info('currency', '$') }} {{ number_format($maxLimit, 2) }}.
+                            </small>
                             
                             @error('amount')
                                 <div class="text-danger small mt-2 d-flex align-items-center">
@@ -155,7 +160,7 @@
                             </li>
                             <li class="d-flex align-items-start">
                                 <i class="fas fa-check text-success me-2 mt-1" style="font-size: 0.75rem;"></i>
-                                <span>Maximum transaction threshold per request is {{ company_info('currency', '$') }} {{ number_format($maxLimit, 2) }}.</span>
+                                <span>Maximum withdrawable per request is your available My Wallet balance: {{ company_info('currency', '$') }} {{ number_format($maxLimit, 2) }}.</span>
                             </li>
                             <li class="d-flex align-items-start">
                                 <i class="fas fa-check text-success me-2 mt-1" style="font-size: 0.75rem;"></i>
