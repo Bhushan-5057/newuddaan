@@ -82,7 +82,12 @@ class DashboardController extends Controller
 
         // Wallets
         $teamwallets = WalletType::where('wallet_type', 'team')->where('status', true)->where($RegistrationType, true)->get();
-        $wallets = WalletType::where('wallet_type', 'wallet')->where('status', true)->get();
+        // Top cards need only My Wallet (main_wallet). Extra active wallet rows
+        // on live were creating extra cards and breaking the 5-card layout.
+        $wallets = WalletType::where('wallet_type', 'wallet')
+            ->where('status', true)
+            ->where('slug', 'main_wallet')
+            ->get();
         // Dashboard cards: Active Bonus → Matching → Reference,
         // then Total Income (blade) → My Wallet (wallets loop).
         // Always include Reference Income (slug=direct) when status=1 even if the

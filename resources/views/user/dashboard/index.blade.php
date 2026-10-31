@@ -37,22 +37,38 @@
 
         .dash-stat-card {
             min-height: 120px;
+            color: #fff;
+            overflow: hidden;
         }
 
         .dash-stat-card .card-body {
-            gap: 0.5rem;
-            overflow: visible;
+            gap: 0.75rem;
+            overflow: hidden;
+            color: #fff;
         }
 
         .dash-stat-card .dash-stat-text {
             min-width: 0;
             flex: 1 1 auto;
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
         }
 
         .dash-stat-card .dash-stat-text h6,
-        .dash-stat-card .dash-stat-text h4 {
+        .dash-stat-card .dash-stat-text h4,
+        .dash-stat-card .dash-stat-text small {
             white-space: normal;
-            word-break: break-word;
+            overflow-wrap: normal;
+            word-break: normal;
+            color: #fff;
+        }
+
+        .dash-stat-card .dash-stat-text h4 {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .dash-stat-icon {
@@ -63,6 +79,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            z-index: 0;
         }
 
         .dash-stat-icon img {
@@ -73,23 +91,164 @@
             display: block;
         }
 
-        @media (max-width: 1199.98px) {
+        /* Default / laptop: cards full width; profile + Matching History share one row below */
+        .dash-top-layout.row {
+            --bs-gutter-x: 0;
+            --bs-gutter-y: 0;
+            display: flex !important;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .dash-top-layout > .dash-cards-col {
+            flex: 0 0 100%;
+            max-width: 100%;
+            width: 100%;
+            padding: 0;
+        }
+
+        .dash-top-layout > .dash-lower-row {
+            flex: 0 0 100%;
+            max-width: 100%;
+            width: 100%;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: stretch;
+        }
+
+        .dash-top-layout .dash-history-col {
+            flex: 1 1 0;
+            min-width: 0;
+            max-width: 100%;
+            padding: 0;
+        }
+
+        .dash-top-layout .dash-panel-col {
+            flex: 0 0 340px;
+            width: 340px;
+            max-width: 100%;
+            padding: 0;
+        }
+
+        .dash-top-layout .dash-panel-col > .card {
+            height: 100%;
+        }
+
+        /* Laptop card density: wider cards (2-up) so icons/text do not collide */
+        @media (max-width: 1399.98px) {
+            .dash-cards-grid {
+                --bs-columns: 2;
+            }
+
+            .dash-cards-grid > .col {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            .dash-stat-card {
+                min-height: 118px;
+            }
+
             .dash-stat-icon {
-                width: 58px;
-                height: 58px;
-                min-width: 58px;
+                width: 52px;
+                height: 52px;
+                min-width: 52px;
+            }
+
+            .dash-stat-card .dash-stat-text h6 {
+                font-size: 0.78rem;
+                line-height: 1.2;
+                margin-bottom: 0.25rem !important;
+            }
+
+            .dash-stat-card .dash-stat-text h4 {
+                font-size: 1.2rem;
+            }
+
+            .dash-stat-card .dash-stat-text small {
+                font-size: 0.7rem !important;
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            .dash-top-layout .dash-history-col,
+            .dash-top-layout .dash-panel-col {
+                flex: 0 0 100%;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .dash-cards-grid > .col {
+                flex: 0 0 50%;
+                max-width: 50%;
             }
         }
 
         @media (max-width: 575.98px) {
+            .dash-cards-grid > .col {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+
             .dash-stat-card {
                 min-height: 110px;
             }
 
             .dash-stat-icon {
-                width: 56px;
-                height: 56px;
-                min-width: 56px;
+                width: 48px;
+                height: 48px;
+                min-width: 48px;
+            }
+
+            .dash-stat-card .dash-stat-text h4 {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Large desktop only: restore original cards (left) + tall profile (right) */
+        @media (min-width: 1400px) {
+            .dash-top-layout.row {
+                display: grid !important;
+                grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+                grid-template-rows: auto auto;
+                column-gap: 1rem;
+                row-gap: 1rem;
+                align-items: start;
+            }
+
+            .dash-top-layout > .dash-cards-col {
+                grid-column: 1;
+                grid-row: 1;
+                width: auto !important;
+                max-width: none !important;
+            }
+
+            .dash-top-layout > .dash-lower-row {
+                display: contents;
+            }
+
+            .dash-top-layout .dash-history-col {
+                grid-column: 1;
+                grid-row: 2;
+                width: auto !important;
+                max-width: none !important;
+                flex: unset !important;
+            }
+
+            .dash-top-layout .dash-panel-col {
+                grid-column: 2;
+                grid-row: 1 / span 2;
+                width: auto !important;
+                max-width: none !important;
+                flex: unset !important;
+                align-self: stretch;
+            }
+
+            .dash-cards-grid > .col {
+                flex: 0 0 33.333333%;
+                max-width: 33.333333%;
             }
         }
     </style>
@@ -107,11 +266,11 @@
 
         <!-- Income Boxes (col-lg-8) -->
         @if (auth()->user()->hasPermission('Dashboard Income', 'can_view'))
-            <div class="row g-3">
+            <div class="row g-3 dash-top-layout">
 
-                {{-- Left Side Income Cards --}}
-                <div class="col-lg-8">
-                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+                {{-- Income Cards (full width below 1400px; left column on large desktop) --}}
+                <div class="col-12 dash-cards-col">
+                    <div class="row g-3 dash-cards-grid">
                 
                         @php
                             $colors = [
@@ -240,9 +399,13 @@
                         @endif
                 
                     </div>
-                
-                    <div class=" mb-4">
-                        <div class="card shadow-sm border-0 rounded-3">
+                </div>
+
+                {{-- Below cards: Matching History + user profile share one row on laptop --}}
+                <div class="dash-lower-row">
+                <div class="dash-history-col">
+                    <div class="mb-0">
+                        <div class="card shadow-sm border-0 rounded-3 h-100">
                             <div class="card-body">
                                 <h4 class="card-title mb-3">Recent Matching History</h4>
                                 <div class="table-responsive">
@@ -264,8 +427,7 @@
                     </div>
                 </div>
 
-                {{-- Right Side User Panel --}}
-                <div class="col-lg-4">
+                <div class="dash-panel-col">
                     <div class="card border-0 rounded-4 overflow-hidden shadow-sm" style="background:#1f2430;">
                         <div class="card-body p-3">
                             {{-- Profile Section --}}
@@ -479,84 +641,12 @@
                         </div>
                     </div>
                 </div>
+                </div>{{-- /.dash-lower-row --}}
             </div>
         @endif
     </div>
 
-    @if (auth()->user()->hasPermission('Wallets view', 'can_view'))
-        <div class="col-lg-12">
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-                @php
-                    $colors = [
-                        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                        'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                        'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-                        'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-                        'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
-                        'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
-                    ];
-
-                    $icons = [
-                        'main_wallet' => 'fa-solid fa-wallet',
-                        'roi_wallet' => 'fa-solid fa-sack-dollar',
-                        'level_wallet' => 'fa-solid fa-users',
-                        'salary_wallet' => 'fa-solid fa-briefcase',
-                        'reward_wallet' => 'fa-solid fa-gift',
-                    ];
-
-                    $colorIndex = 0;
-                @endphp
-
-                {{-- Total Income --}}
-                <div class="col">
-                    <div class="card shadow-sm border-0 rounded-4 h-100  overflow-hidden"
-                        style="background: linear-gradient(135deg, #141e30 0%, #243b55 100%);">
-                        <div class="card-body d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1 ">TOTAL INCOME</h6>
-                                <h4 class="mb-2 fw-bold">
-                                    {{ company_info('currency', '₹') }}
-                                    {{ rtrim(rtrim(number_format($totalincomegss, 3, '.', ''), '0'), '.') }}
-                                </h4>
-                            </div>
-                            <div class="icon-box">
-                                <i class="fa-solid fa-chart-line fs-1  opacity-75"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Dynamic Wallets --}}
-                @foreach ($wallets as $wallet)
-                    @php
-                        $walletValue = $userwallet->{$wallet->wallet_column} ?? 0;
-                        $bgColor = $colors[$colorIndex % count($colors)];
-                        $colorIndex++;
-                        $icon = $icons[$wallet->wallet_column] ?? 'fa-solid fa-coins';
-                    @endphp
-
-                    <div class="col">
-                        <div class="card shadow-sm border-0 rounded-4 h-100  overflow-hidden"
-                            style="background: {{ $bgColor }};">
-                            <div class="card-body d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-1 ">{{ strtoupper($wallet->name) }}</h6>
-                                    <h4 class="mb-0 fw-bold">
-                                        {{ company_info('currency', '₹') }}
-                                        {{ rtrim(rtrim(number_format($walletValue, 3, '.', ''), '0'), '.') }}
-                                    </h4>
-                                </div>
-                                <div class="icon-box">
-                                    <i class="{{ $icon }} fs-1 opacity-75"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    @endif
+    {{-- Old Font Awesome Total Income / Wallets strip removed: top dash-stat cards already show the 5 cards. --}}
 
     <div class="row">
         <div class="col-md-12 mb-3">

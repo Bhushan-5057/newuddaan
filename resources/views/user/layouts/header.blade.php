@@ -187,6 +187,26 @@
                 display: none;
             }
 
+            /* Collapsed sidebar: match header logo size (40px). Open/hover: keep big 80px logo. */
+            .app-wrapper .semi-nav:not(:hover) .app-logo > a.logo img {
+                height: 40px !important;
+                width: 40px !important;
+                object-fit: contain;
+            }
+
+            .app-wrapper .semi-nav:hover .app-logo > a.logo img,
+            .app-wrapper nav:not(.semi-nav) .app-logo > a.logo img {
+                height: 80px !important;
+                width: 80px !important;
+                object-fit: contain;
+            }
+
+            .app-wrapper .semi-nav:not(:hover) .app-logo > a.logo {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+            }
+
             .app-wrapper .semi-nav:hover .sidebar-logout-pin .menu-icon-box,
             .app-wrapper nav:not(.semi-nav) .sidebar-logout-pin .menu-icon-box,
             .app-wrapper .semi-nav:hover .app-nav .menu-icon-box,
