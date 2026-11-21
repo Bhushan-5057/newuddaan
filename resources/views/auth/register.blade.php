@@ -340,7 +340,7 @@
                         <!-- /Logo -->
 
                         <!-- Display General Errors -->
-                        @if ($errors->any() && !$errors->has('title') && !$errors->has('first_name') && !$errors->has('unique_name') && !$errors->has('password') && !$errors->has('sponsor_display') && !$errors->has('side'))
+                        @if ($errors->any() && !$errors->has('title') && !$errors->has('first_name') && !$errors->has('date_of_birth') && !$errors->has('unique_name') && !$errors->has('password') && !$errors->has('sponsor_display') && !$errors->has('side'))
                             <div class="alert alert-danger">
                                 <ul class="mb-0">
                                     @foreach ($errors->all() as $error)
@@ -395,6 +395,21 @@
                                         <option value="Other" {{ old('gender') == 'Other' ? 'selected' : '' }}>Other</option>
                                     </select>
                                     @error('gender') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Date of Birth -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="date_of_birth" class="form-label">Date of Birth *</label>
+                                    <input type="date"
+                                           class="form-control @error('date_of_birth') is-invalid @enderror"
+                                           id="date_of_birth"
+                                           name="date_of_birth"
+                                           value="{{ old('date_of_birth') }}"
+                                           max="{{ now()->subYears(18)->format('Y-m-d') }}"
+                                           min="{{ now()->subYears(100)->format('Y-m-d') }}"
+                                           required>
+                                    <small class="text-muted">You must be at least 18 years old.</small>
+                                    @error('date_of_birth') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <!-- State -->
@@ -924,17 +939,33 @@
             });
 
             // ==========================================================
-            // FORM SUBMIT HANDLER - Debug and ensure submission
+            // FORM SUBMIT HANDLER - DOB 18+ check
             // ==========================================================
             const form = document.getElementById('formAuthentication');
             if (form) {
-                // Remove any existing submit listeners that might block
-                form.removeEventListener('submit', function() {});
-                
-                // Add a clean submit handler for debugging
                 form.addEventListener('submit', function(e) {
-                    console.log('Form is being submitted!');
-                    // Let the form submit naturally
+                    const dobInput = document.getElementById('date_of_birth');
+                    if (!dobInput || !dobInput.value) {
+                        return;
+                    }
+
+                    const dob = new Date(dobInput.value + 'T00:00:00');
+                    const cutoff = new Date();
+                    cutoff.setFullYear(cutoff.getFullYear() - 18);
+                    cutoff.setHours(0, 0, 0, 0);
+
+                    if (dob > cutoff) {
+                        e.preventDefault();
+                        dobInput.classList.add('is-invalid');
+                        let feedback = dobInput.parentElement.querySelector('.invalid-feedback.dob-client');
+                        if (!feedback) {
+                            feedback = document.createElement('div');
+                            feedback.className = 'invalid-feedback dob-client d-block';
+                            dobInput.parentElement.appendChild(feedback);
+                        }
+                        feedback.textContent = 'You must be at least 18 years old to register.';
+                        dobInput.focus();
+                    }
                 });
             }
         });

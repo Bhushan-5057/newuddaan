@@ -90,18 +90,26 @@ class DashboardController extends Controller
             ->get();
         // Dashboard cards: Active Bonus → Matching → Reference,
         // then Total Income (blade) → My Wallet (wallets loop).
-        // Always include Reference Income (slug=direct) when status=1 even if the
-        // reg_type column flag is off — live DB had generation=0 and dropped the card.
+        // Do NOT gate these three on reg_type columns (generation/binary/etc.):
+        // live DB had reward.generation=0 so Active Bonus disappeared and the
+        // remaining cards shifted colors/icons ("Sponsor Income" vs Reference).
         $incomeCardOrder = ['reward', 'binary', 'direct'];
         $incometype = WalletType::where('wallet_type', 'income')
             ->where('status', true)
             ->whereIn('slug', $incomeCardOrder)
-            ->where(function ($q) use ($RegistrationType) {
-                $q->where($RegistrationType, '1')
-                    ->orWhere('slug', 'direct');
-            })
+            ->orderBy('id')
             ->get()
-            ->unique('slug')
+            ->groupBy('slug')
+            ->map(function ($group, $slug) {
+                // Prefer the canonical Active Bonus row when slug=reward is duplicated.
+                if ($slug === 'reward') {
+                    return $group->first(function ($row) {
+                        return stripos((string) $row->name, 'Active Bonus') !== false;
+                    }) ?? $group->first();
+                }
+
+                return $group->first();
+            })
             ->sortBy(function ($income) use ($incomeCardOrder) {
                 $pos = array_search($income->slug, $incomeCardOrder, true);
 
@@ -363,7 +371,67 @@ foreach ($matchingTypes as $type) {
     ];
 }
 
+        /*
+        |--------------------------------------------------------------------------
+        | WEEKLY CHEQUE CARD
+        |--------------------------------------------------------------------------
+        | Next cheque = unmatched matching income still pending for the next
+        | weekly closing (already-paid pairs are excluded via MatchingBonusHistory).
+        | Last week cheque = matching credits already closed in the previous week.
+        */
+        $lastWeekStart = Carbon::now()->subWeek()->startOfWeek(Carbon::MONDAY)->startOfDay();
+        $lastWeekEnd   = Carbon::now()->subWeek()->endOfWeek(Carbon::SUNDAY)->endOfDay();
+        $thisWeekStart = Carbon::now()->startOfWeek(Carbon::MONDAY)->startOfDay();
+        $thisWeekEnd   = Carbon::now()->endOfWeek(Carbon::SUNDAY)->endOfDay();
 
+        $nextChequeGross = (float) (($cronPrediction['topup']['predicted_income'] ?? 0)
+            + ($cronPrediction['retopup']['predicted_income'] ?? 0));
+        $nextChequePairs = (int) (($cronPrediction['topup']['predicted_pairs'] ?? 0)
+            + ($cronPrediction['retopup']['predicted_pairs'] ?? 0));
+
+        $lastWeekCheque = (float) MatchingBonusHistory::where('user_id', $userId)
+            ->whereBetween('date', [$lastWeekStart->toDateString(), $lastWeekEnd->toDateString()])
+            ->sum('bonus_amount');
+
+        $thisWeekClosed = (float) MatchingBonusHistory::where('user_id', $userId)
+            ->whereBetween('date', [$thisWeekStart->toDateString(), $thisWeekEnd->toDateString()])
+            ->sum('bonus_amount');
+
+        $lastClosingRow = MatchingBonusHistory::where('user_id', $userId)
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->first();
+
+        $wdChargeRow = AdvanceInfo::where('label', 'wd_charges')->first();
+        $wdChargeValue = (float) ($wdChargeRow->value ?? 0);
+        $rawWdOptions = $wdChargeRow->options ?? '{"percent":"percent"}';
+        $wdChargeOptions = json_decode((string) $rawWdOptions, true);
+        $wdChargeType = is_array($wdChargeOptions) ? array_key_first($wdChargeOptions) : null;
+        if ($wdChargeType === null || $wdChargeType === '') {
+            $wdChargeType = (stripos((string) $rawWdOptions, 'percent') !== false) ? 'percent' : 'flat';
+        }
+
+        $nextChequeCharge = $wdChargeType === 'percent'
+            ? ($nextChequeGross * $wdChargeValue) / 100
+            : ($nextChequeGross > 0 ? $wdChargeValue : 0);
+        $nextChequePayable = max(0, $nextChequeGross - $nextChequeCharge);
+
+        $weeklyCheque = [
+            'next_gross'     => $nextChequeGross,
+            'next_pairs'     => $nextChequePairs,
+            'next_charge'    => $nextChequeCharge,
+            'next_payable'   => $nextChequePayable,
+            'charge_label'   => $wdChargeType === 'percent'
+                ? ($wdChargeValue . '%')
+                : number_format($wdChargeValue, 2),
+            'last_week'      => $lastWeekCheque,
+            'this_week_closed'=> $thisWeekClosed,
+            'last_closing_on'=> optional($lastClosingRow)->date
+                ? Carbon::parse($lastClosingRow->date)->format('d M Y')
+                : null,
+            'week_label'     => $thisWeekStart->format('d M') . ' – ' . $thisWeekEnd->format('d M Y'),
+            'last_week_label'=> $lastWeekStart->format('d M') . ' – ' . $lastWeekEnd->format('d M Y'),
+        ];
 
         /*
         --------------------------------
@@ -467,7 +535,8 @@ foreach ($txTypes as $type) {
             'recentPurchases',
 
 
-'cronPrediction', 
+'cronPrediction',
+            'weeklyCheque',
 
 
 //binary team section

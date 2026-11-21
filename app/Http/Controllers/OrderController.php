@@ -42,6 +42,8 @@ use Illuminate\Support\Facades\Auth;
 
 use Yajra\DataTables\Facades\DataTables;
 
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 
 class OrderController extends Controller
@@ -77,13 +79,26 @@ class OrderController extends Controller
 
 public function invoice($id)
 {
-    // tx_id દ્વારા ઓર્ડર શોધો
-    $order = Order::with(['items.product'])->where('tx_id', $id)->firstOrFail();
+    // Same DomPDF template as admin invoice download
+    $order = Order::with(['user', 'items.product'])
+        ->where('tx_id', $id)
+        ->where('u_code', Auth::id())
+        ->firstOrFail();
 
-    // ઓર્ડરની આઈટમ્સની કુલ સંખ્યા
-    $totalItems = $order->items->count();
+    if (empty($order->invoice_no)) {
+        $nextNo = (int) (Order::max('invoice_no') ?? 0) + 1;
+        $order->invoice_no = $nextNo > 0 ? $nextNo : (int) $order->id;
+        $order->save();
+    }
 
-    return view('main.product.invoice', compact('order', 'totalItems'));
+    $html = view('admin.orders.invoice_pdf', compact('order'))->render();
+
+    $pdf = Pdf::loadHTML($html);
+    $pdf->setPaper('A4', 'portrait');
+
+    $fileName = 'invoice_' . $order->tx_id . '.pdf';
+
+    return $pdf->download($fileName);
 }
 
 

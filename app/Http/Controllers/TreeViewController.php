@@ -29,46 +29,7 @@ public function showTree()
         return redirect()->route('login')->with('error', 'You must be logged in to view the tree.');
     }
 
-    $userId = $rootUser->id;
-    $userusername = $rootUser->username;
-
-    // Each leg can hold thousands of ids, and every whereIn() against it sends
-    // that whole list to MySQL. The root's active directs are a small set, so
-    // fetch them once and intersect in PHP rather than adding another huge IN.
-    $directActiveIds = User::where('sponsor_id', $userusername)
-        ->where('status', 1)
-        ->pluck('id')
-        ->map(fn ($id) => (int) $id)
-        ->all();
-
-    // Left team downline IDs
-    $leftTeamIds = $this->getDownlineUserIds($rootUser->left_id);
-    $totalLeftTeam = count($leftTeamIds);
-    $activeLeftTeam = $this->countActive($leftTeamIds);
-    $leftBusiness = $this->packageBv($leftTeamIds);
-    $leftDirectActive = count(array_intersect($directActiveIds, $leftTeamIds));
-
-    // Right team downline IDs
-    $rightTeamIds = $this->getDownlineUserIds($rootUser->right_id);
-    $totalRightTeam = count($rightTeamIds);
-    $activeRightTeam = $this->countActive($rightTeamIds);
-    $rightBusiness = $this->packageBv($rightTeamIds);
-    $rightDirectActive = count(array_intersect($directActiveIds, $rightTeamIds));
-
-
-    $leftTeam = [
-        'member'       => $totalLeftTeam,
-        'point'        => $leftBusiness,
-        'green_unit'   => $activeLeftTeam,
-        'green_direct' => $leftDirectActive,
-    ];
-
-    $rightTeam = [
-        'member'       => $totalRightTeam,
-        'point'        => $rightBusiness,
-        'green_unit'   => $activeRightTeam,
-        'green_direct' => $rightDirectActive,
-    ];
+    [$leftTeam, $rightTeam] = $this->teamComparisonFor($rootUser);
 
     // The tree markup used to be rendered for the whole downline and then
     // hidden down to three levels by JavaScript. On a deep tree that meant
@@ -143,6 +104,8 @@ public function fetchSubTree(Request $request)
         'onlyPosition' => null,
     ])->render();
 
+    [$leftTeam, $rightTeam] = $this->teamComparisonFor($target);
+
     return response()->json([
         'html' => $html,
         'root' => [
@@ -150,8 +113,44 @@ public function fetchSubTree(Request $request)
             'username' => $target->username,
             'name' => $target->name,
         ],
+        'leftTeam' => $leftTeam,
+        'rightTeam' => $rightTeam,
         'hidden' => array_map(fn ($d) => $d['skipped_username'], $this->duplicatePlacements),
     ]);
+}
+
+/**
+ * Left/right team comparison for whichever user is currently the tree root.
+ *
+ * @return array{0: array{member:int,point:float,green_unit:int,green_direct:int}, 1: array{member:int,point:float,green_unit:int,green_direct:int}}
+ */
+private function teamComparisonFor(User $user): array
+{
+    // Active directs of this user (sponsor_id = username), intersected with each leg.
+    $directActiveIds = User::where('sponsor_id', $user->username)
+        ->where('status', 1)
+        ->pluck('id')
+        ->map(fn ($id) => (int) $id)
+        ->all();
+
+    $leftTeamIds = $this->getDownlineUserIds($user->left_id);
+    $rightTeamIds = $this->getDownlineUserIds($user->right_id);
+
+    $leftTeam = [
+        'member'       => count($leftTeamIds),
+        'point'        => $this->packageBv($leftTeamIds),
+        'green_unit'   => $this->countActive($leftTeamIds),
+        'green_direct' => count(array_intersect($directActiveIds, $leftTeamIds)),
+    ];
+
+    $rightTeam = [
+        'member'       => count($rightTeamIds),
+        'point'        => $this->packageBv($rightTeamIds),
+        'green_unit'   => $this->countActive($rightTeamIds),
+        'green_direct' => count(array_intersect($directActiveIds, $rightTeamIds)),
+    ];
+
+    return [$leftTeam, $rightTeam];
 }
 
 /**

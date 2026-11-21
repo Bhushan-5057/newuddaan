@@ -15,7 +15,8 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('roi:calculate')->daily();
         $schedule->command('binary:roi-matching')->monthly();
-        $schedule->command('matching:closing')->monthly();
+        // Matching income closes weekly; already-paid pairs are skipped via MatchingBonusHistory.
+        $schedule->command('matching:closing')->weekly()->mondays()->at('00:30');
         $schedule->command('rank:closing')->daily();
        
     }

@@ -686,11 +686,11 @@ $user = Auth::user();
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="text-center">
-                                <td>{{ $leftTeam['member'] ?? 39 }}</td>
-                                <td>{{ $leftTeam['point'] ?? 96000 }}</td>
-                                <td>{{ $leftTeam['green_unit'] ?? 38 }}</td>
-                                <td>{{ $leftTeam['green_direct'] ?? 1 }}</td>
+                            <tr class="text-center" id="leftTeamStats">
+                                <td data-field="member">{{ $leftTeam['member'] ?? 0 }}</td>
+                                <td data-field="point">{{ $leftTeam['point'] ?? 0 }}</td>
+                                <td data-field="green_unit">{{ $leftTeam['green_unit'] ?? 0 }}</td>
+                                <td data-field="green_direct">{{ $leftTeam['green_direct'] ?? 0 }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -712,11 +712,11 @@ $user = Auth::user();
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="text-center">
-                                <td>{{ $rightTeam['member'] ?? 16 }}</td>
-                                <td>{{ $rightTeam['point'] ?? 40000 }}</td>
-                                <td>{{ $rightTeam['green_unit'] ?? 16 }}</td>
-                                <td>{{ $rightTeam['green_direct'] ?? 1 }}</td>
+                            <tr class="text-center" id="rightTeamStats">
+                                <td data-field="member">{{ $rightTeam['member'] ?? 0 }}</td>
+                                <td data-field="point">{{ $rightTeam['point'] ?? 0 }}</td>
+                                <td data-field="green_unit">{{ $rightTeam['green_unit'] ?? 0 }}</td>
+                                <td data-field="green_direct">{{ $rightTeam['green_direct'] ?? 0 }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -987,10 +987,25 @@ $user = Auth::user();
     @endphp
     const TREE_FETCH_URL = @json(route('user.tree.fetchSubTree'));
     const TREE_ROOT = @json($treeRootPayload);
+    const INITIAL_LEFT_TEAM = @json($leftTeam);
+    const INITIAL_RIGHT_TEAM = @json($rightTeam);
 
     let treePath = @json($treePathPayload);
     let treeBusy = false;
     let initialTreeHtml = '';
+
+    function updateTeamComparison(leftTeam, rightTeam) {
+        function fill(rowId, data) {
+            const $row = $('#' + rowId);
+            if (!$row.length || !data) return;
+            $row.find('[data-field="member"]').text(data.member ?? 0);
+            $row.find('[data-field="point"]').text(data.point ?? 0);
+            $row.find('[data-field="green_unit"]').text(data.green_unit ?? 0);
+            $row.find('[data-field="green_direct"]').text(data.green_direct ?? 0);
+        }
+        fill('leftTeamStats', leftTeam);
+        fill('rightTeamStats', rightTeam);
+    }
 
     function renderBreadcrumb() {
         const $bc = $('#treeBreadcrumb').empty();
@@ -1048,6 +1063,7 @@ $user = Auth::user();
             username: TREE_ROOT.username,
             name: TREE_ROOT.name
         }];
+        updateTeamComparison(INITIAL_LEFT_TEAM, INITIAL_RIGHT_TEAM);
         renderBreadcrumb();
         afterTreeChange();
         showNotification('Back to your tree');
@@ -1088,6 +1104,9 @@ $user = Auth::user();
                         treePath = treePath.concat([res.root]);
                     }
                     renderBreadcrumb();
+                }
+                if (res.leftTeam || res.rightTeam) {
+                    updateTeamComparison(res.leftTeam, res.rightTeam);
                 }
                 renderHiddenNote(res.hidden);
                 afterTreeChange();

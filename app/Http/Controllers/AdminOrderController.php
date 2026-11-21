@@ -171,6 +171,30 @@ class AdminOrderController extends Controller
                 };
             })
 
+            ->addColumn('invoice_status', function ($row) {
+                $statusBadge = !empty($row->invoice_no)
+                    ? '<span class="badge bg-success mb-1 d-inline-block">Invoice Generated</span>'
+                    : '<span class="badge bg-secondary mb-1 d-inline-block">Not Generated</span>';
+
+                // Completed orders: keep only a compact Download button in this column
+                if ((int) $row->status === 2) {
+                    $invoiceUrl = route('admin.orders.print-invoice', $row->id);
+                    $fileName = 'invoice_' . $row->tx_id . '.pdf';
+                    $downloadBtn = '<button type="button" class="btn btn-sm btn-success btn-download-invoice"'
+                        . ' data-url="' . e($invoiceUrl) . '"'
+                        . ' data-filename="' . e($fileName) . '"'
+                        . ' title="Download Invoice">'
+                        . '<i class="bx bx-download"></i> Download</button>';
+
+                    return '<div class="d-flex flex-column align-items-start gap-1">'
+                        . $statusBadge
+                        . $downloadBtn
+                        . '</div>';
+                }
+
+                return $statusBadge;
+            })
+
             ->addColumn('action', function ($row) {
                 $viewBtn = '<a href="' . route('admin.productorders.view', $row->id) . '" class="btn btn-sm btn-primary me-1">View</a>';
 
@@ -188,7 +212,7 @@ class AdminOrderController extends Controller
                 return \Carbon\Carbon::parse($row->added_on)->format('d-m-Y h:i A');
             })
 
-            ->rawColumns(['status_label', 'action'])
+            ->rawColumns(['status_label', 'invoice_status', 'action'])
 
             ->make(true);
     }
@@ -199,12 +223,26 @@ class AdminOrderController extends Controller
 {
     $order = Order::with(['user', 'items.product'])->findOrFail($id);
 
+    // Mark invoice as generated (reuse existing invoice_no column)
+    if (empty($order->invoice_no)) {
+        $nextNo = (int) (Order::max('invoice_no') ?? 0) + 1;
+        $order->invoice_no = $nextNo > 0 ? $nextNo : (int) $order->id;
+        $order->save();
+    }
+
     $html = view('admin.orders.invoice_pdf', compact('order'))->render();
 
     $pdf = Pdf::loadHTML($html);
     $pdf->setPaper('A4', 'portrait');
 
-    return $pdf->stream('invoice_' . $order->tx_id . '.pdf');
+    $fileName = 'invoice_' . $order->tx_id . '.pdf';
+
+    // Attachment download so browser can prompt save location / filename
+    if (request()->boolean('download')) {
+        return $pdf->download($fileName);
+    }
+
+    return $pdf->stream($fileName);
 }
 
 

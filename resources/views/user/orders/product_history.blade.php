@@ -29,10 +29,13 @@
                 </div>
 
                 <div>
-                    <a href="{{ route('order.invoice', $order->tx_id) }}"
-                       class="btn btn-sm btn-success">
-                        <i class="bx bx-printer me-1"></i> Invoice
-                    </a>
+                    <button type="button"
+                            class="btn btn-sm btn-success btn-download-invoice"
+                            data-url="{{ route('order.invoice', $order->tx_id) }}"
+                            data-filename="invoice_{{ $order->tx_id }}.pdf"
+                            title="Download Invoice">
+                        <i class="bx bx-download me-1"></i> Invoice
+                    </button>
                 </div>
             </div>
 
@@ -97,5 +100,65 @@
         </div>
     @endforelse
 </div>
+
+<script>
+async function saveInvoiceBlob(blob, filename) {
+    if (window.showSaveFilePicker) {
+        const handle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{
+                description: 'PDF Document',
+                accept: { 'application/pdf': ['.pdf'] }
+            }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+
+document.querySelectorAll('.btn-download-invoice').forEach(function (btn) {
+    btn.addEventListener('click', async function () {
+        const url = btn.getAttribute('data-url');
+        const filename = btn.getAttribute('data-filename') || 'invoice.pdf';
+        if (!url) return;
+
+        btn.disabled = true;
+        try {
+            const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'download=1', {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/pdf' }
+            });
+            if (!res.ok) throw new Error('Download failed');
+            const blob = await res.blob();
+            await saveInvoiceBlob(blob, filename);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('Saved', 'Invoice downloaded successfully.', 'success');
+            }
+        } catch (err) {
+            if (err && err.name === 'AbortError') {
+                // user cancelled save dialog
+            } else if (typeof Swal !== 'undefined') {
+                Swal.fire('Error', 'Unable to download invoice.', 'error');
+            } else {
+                alert('Unable to download invoice.');
+            }
+        } finally {
+            btn.disabled = false;
+        }
+    });
+});
+</script>
 
 @endsection

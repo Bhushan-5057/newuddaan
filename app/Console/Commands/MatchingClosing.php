@@ -66,6 +66,8 @@ class MatchingClosing extends Command
                 $totalLeft = (float) (($legs[$userId][1] ?? 0) + ($power[$userId][1] ?? 0));
                 $totalRight = (float) (($legs[$userId][2] ?? 0) + ($power[$userId][2] ?? 0));
 
+                // Incremental only: pairs already closed in MatchingBonusHistory are
+                // subtracted, so a user paid in a previous week is not recalculated.
                 $usedPairs = (float) UserHelper::benPairsByType($userId, $type);
                 $usedBusiness = $usedPairs * $cfg['pair_value'];
 

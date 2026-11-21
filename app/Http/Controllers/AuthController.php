@@ -84,6 +84,12 @@ class AuthController extends Controller
                 'title' => 'required|string|max:20',
                 'first_name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z]+(?: [A-Za-z]+)*$/'],
                 'last_name' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+(?: [A-Za-z]+)*$/'],
+                'date_of_birth' => [
+                    'required',
+                    'date',
+                    'before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
+                    'after_or_equal:' . now()->subYears(100)->format('Y-m-d'),
+                ],
                 'gender' => 'nullable|in:Male,Female,Other',
                 'state' => 'nullable|string|max:100',
                 'city' => 'nullable|string|max:100',
@@ -112,6 +118,10 @@ class AuthController extends Controller
                 'unique_name.unique' => 'This name is already taken. Please choose another.',
                 'first_name.regex' => 'First name may contain letters and spaces only (no numbers or special characters).',
                 'last_name.regex' => 'Last name may contain letters and spaces only (no numbers or special characters).',
+                'date_of_birth.required' => 'Date of birth is required.',
+                'date_of_birth.date' => 'Please enter a valid date of birth.',
+                'date_of_birth.before_or_equal' => 'You must be at least 18 years old to register.',
+                'date_of_birth.after_or_equal' => 'Please enter a valid date of birth.',
                 'pan.regex' => 'Please enter a valid PAN number (e.g. ABCDE1234F).',
                 'pan.unique' => 'This PAN number is already registered.',
                 'aadhaar.min' => 'Aadhaar number must be exactly 12 digits (e.g. 1234 5678 9012).',
@@ -159,6 +169,7 @@ class AuthController extends Controller
                     'first_name' => $data['first_name'],
                     'last_name' => $data['last_name'] ?? null,
                     'name' => trim($data['first_name'] . ' ' . ($data['last_name'] ?? '')),
+                    'date_of_birth' => $data['date_of_birth'],
                     'gender' => $data['gender'] ?? null,
                     'state' => $data['state'] ?? null,
                     'city' => $data['city'] ?? null,
@@ -208,6 +219,28 @@ class AuthController extends Controller
                     } else {
                         // Find available placement quickly with optimized query
                         list($parentId, $position) = $this->findAvailablePositionOptimized($sponsor->id, $sideParam);
+
+                        // Re-check under the transaction so two simultaneous joins
+                        // cannot land on the same parent_id + position slot.
+                        $slotTaken = User::where('parent_id', $parentId)
+                            ->where('position', $position)
+                            ->lockForUpdate()
+                            ->exists();
+
+                        if ($slotTaken) {
+                            list($parentId, $position) = $this->findAvailablePositionOptimized($sponsor->id, $sideParam);
+                            $slotTaken = User::where('parent_id', $parentId)
+                                ->where('position', $position)
+                                ->lockForUpdate()
+                                ->exists();
+                        }
+
+                        if ($slotTaken) {
+                            throw ValidationException::withMessages([
+                                'position' => 'Unable to find a free binary position on this side. Please try again.'
+                            ]);
+                        }
+
                         $userData['parent_id'] = $parentId;
                         $userData['position'] = $position;
                     }
@@ -216,9 +249,11 @@ class AuthController extends Controller
                 // --- Create user ---
                 $user = User::create($userData);
 
-                // --- Update parent's left/right (single query) ---
+                // --- Sync parent's cached left/right for this free slot ---
+                // Placement above guarantees parent_id+position was empty, so this
+                // only fills a vacant cached pointer (never a duplicate slot).
                 if ($RegistrationType == 'binary' && isset($userData['parent_id'])) {
-                    $updateField = $userData['position'] === 1 ? 'left_id' : 'right_id';
+                    $updateField = ((int) $userData['position'] === 1) ? 'left_id' : 'right_id';
                     User::where('id', $userData['parent_id'])->update([$updateField => $user->id]);
                 }
 
@@ -325,41 +360,41 @@ class AuthController extends Controller
     }
 
     /**
-     * Find available position by checking levels (max 10 levels deep)
+     * Walk the same-side binary chain until a free slot is found.
+     * Same behaviour as BinaryPlacementTrait::findPlacement, but iterative
+     * with a cycle guard — never falls back to an already-occupied root slot
+     * (that caused new IDs to save but vanish from the tree).
      */
-    private function findAvailablePositionByLevel($rootId, $position, $maxLevel = 10)
+    private function findAvailablePositionByLevel($rootId, $position, $maxLevel = 500)
     {
+        $currentId = (int) $rootId;
+        $seen = [];
         $level = 0;
-        $currentNodes = [$rootId];
-        
-        while ($level < $maxLevel && !empty($currentNodes)) {
-            $nextLevel = [];
-            
-            foreach ($currentNodes as $nodeId) {
-                // Check if this node has the position available
-                $exists = User::where('parent_id', $nodeId)
-                    ->where('position', $position)
-                    ->exists();
-                    
-                if (!$exists) {
-                    return [$nodeId, $position];
-                }
-                
-                // Get children for next level (only 1 level deeper)
-                $children = User::where('parent_id', $nodeId)
-                    ->where('position', $position)
-                    ->pluck('id')
-                    ->toArray();
-                    
-                $nextLevel = array_merge($nextLevel, $children);
+
+        while ($level < $maxLevel) {
+            if (isset($seen[$currentId])) {
+                throw ValidationException::withMessages([
+                    'position' => 'Binary placement loop detected. Please contact support.'
+                ]);
             }
-            
-            $currentNodes = $nextLevel;
+            $seen[$currentId] = true;
+
+            $child = User::where('parent_id', $currentId)
+                ->where('position', $position)
+                ->orderBy('id')
+                ->first();
+
+            if (!$child) {
+                return [$currentId, $position];
+            }
+
+            $currentId = (int) $child->id;
             $level++;
         }
-        
-        // Fallback: return root with position
-        return [$rootId, $position];
+
+        throw ValidationException::withMessages([
+            'position' => 'Unable to find a free binary position on this side. Please try again.'
+        ]);
     }
 
     /**

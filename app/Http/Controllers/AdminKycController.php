@@ -18,9 +18,11 @@ class AdminKycController extends Controller
             $search = $request->search;
             
             $query->where(function ($q) use ($search) {
-                // ૧. KycDetail ટેબલની અંદરના પોતાના fields માં સર્ચ (name, mobile)
+                // ૧. KycDetail ટેબલની અંદરના પોતાના fields માં સર્ચ (name, mobile, document nos)
                 $q->where('name', 'like', '%' . $search . '%')
                   ->orWhere('mobile', 'like', '%' . $search . '%')
+                  ->orWhere('tax_id', 'like', '%' . $search . '%')
+                  ->orWhere('pan_no', 'like', '%' . $search . '%')
                   // ૨. User રિલેશનશિપ ટેબલની અંદર સર્ચ (username, name)
                   ->orWhereHas('user', function ($userQuery) use ($search) {
                       $userQuery->where('username', 'like', '%' . $search . '%')

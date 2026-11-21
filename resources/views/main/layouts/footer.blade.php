@@ -111,13 +111,23 @@
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 8px;
-    padding: 10px;
+    padding: 16px 18px;
 }
 
 .news-marquee-content {
     position: absolute;
-    width: 100%;
+    left: 18px;
+    right: 18px;
+    width: auto;
+    box-sizing: border-box;
+    padding: 8px 4px;
     animation: scrollNews 15s linear infinite;
+}
+
+.news-marquee-box .footer-news-item {
+    padding-right: 6px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .news-marquee-box:hover .news-marquee-content {
@@ -141,7 +151,14 @@
 
         <div class="news-marquee-box">
             <div class="news-marquee-content">
-                {!! nl2br(company_info('news')) !!}
+                @forelse(($footerNewsItems ?? collect()) as $newsItem)
+                    <div class="footer-news-item mb-3">
+                        <strong class="d-block">{{ $newsItem->title }}</strong>
+                        <span>{{ \Illuminate\Support\Str::limit(trim(preg_replace('/\s+/', ' ', strip_tags((string) $newsItem->description))), 180) }}</span>
+                    </div>
+                @empty
+                    <div class="footer-news-item">No latest news available.</div>
+                @endforelse
             </div>
         </div>
 
@@ -503,10 +520,10 @@
                 el.innerHTML = '<i class="fas fa-check"></i> Added';
                 el.disabled = true;
 
+                // After add-to-cart from website, go to user dashboard
                 setTimeout(() => {
-                    el.innerHTML = oldHtml;
-                    el.disabled = false;
-                }, 1200);
+                    window.location.href = "{{ route('dashboard.user') }}";
+                }, 800);
             },
             error: function() {
                 alert("Something went wrong!");
@@ -564,33 +581,50 @@
                 _token: "{{ csrf_token() }}"
             },
             success: function(res) {
+                const msg = (res && res.message) ? res.message : 'Product removed from the cart';
 
-                // remove item
+                // Show confirmation first (do not wait on DOM updates)
+                if (typeof showGlobalAlert === "function") {
+                    showGlobalAlert(msg, 'success');
+                } else if (typeof Swal !== 'undefined') {
+                    Swal.fire('Success!', msg, 'success');
+                } else {
+                    alert(msg);
+                }
+
+                // remove item (cart page row or sidebar item)
                 document.querySelector('.cart-item[data-id="' + cartId + '"]')?.remove();
+                document.querySelector('[data-cart-id="' + cartId + '"]')?.closest('tr')?.remove();
 
-                // update header total
-                document.querySelector('.cart-total span').innerText =
-                    'total item (' + res.cart_items + ')';
+                // update header total (safe if elements missing on cart page)
+                const cartTotalSpan = document.querySelector('.cart-total span');
+                if (cartTotalSpan) {
+                    cartTotalSpan.innerText = 'total item (' + res.cart_items + ')';
+                }
 
-                document.querySelector('.checkout-price').innerText =
-                    '₹' + res.cart_total;
+                const checkoutPrice = document.querySelector('.checkout-price');
+                if (checkoutPrice) {
+                    checkoutPrice.innerText = '₹' + res.cart_total;
+                }
 
                 if (typeof refreshHeader === "function") refreshHeader();
                 if (typeof refreshCartSidebar === "function") refreshCartSidebar();
 
                 // empty cart
                 if (res.cart_items == 0) {
-                    document.querySelector('.cart-list').innerHTML =
-                        '<li class="text-center mt-5">Your cart is empty</li>';
-                }
-
-                if (typeof showGlobalAlert === "function") {
-                    showGlobalAlert(res.message, 'success');
+                    const cartList = document.querySelector('.cart-list');
+                    if (cartList) {
+                        cartList.innerHTML = '<li class="text-center mt-5">Your cart is empty</li>';
+                    }
                 }
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
-                alert('Unable to remove item');
+                if (typeof showGlobalAlert === "function") {
+                    showGlobalAlert('Unable to remove item', 'error');
+                } else {
+                    alert('Unable to remove item');
+                }
             }
         });
     }
@@ -910,7 +944,15 @@
     
             success: function(res)
             {
-    
+                const msg = (res && res.message) ? res.message : 'Product removed from the cart';
+                if (typeof showGlobalAlert === "function") {
+                    showGlobalAlert(msg, 'success');
+                } else if (typeof Swal !== 'undefined') {
+                    Swal.fire('Success!', msg, 'success');
+                } else {
+                    alert(msg);
+                }
+
                 /*
                 |--------------------------------------------------------------------------
                 | REMOVE ROW

@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\FranchiseOrder;
 use App\Models\TransactionFranchise;
 use App\Models\Category;
+use App\Models\NoticeBoard;
 use Illuminate\Pagination\Paginator;
 
 use Illuminate\Support\Facades\Auth;
@@ -84,6 +85,22 @@ class AppServiceProvider extends ServiceProvider
             }
 
             $view->with('categories', $categories);
+        });
+
+        // Website footer "Latest News" from admin News & Events (notice_board)
+        View::composer('main.layouts.footer', function ($view) {
+            static $footerNewsItems = null;
+
+            if ($footerNewsItems === null) {
+                $footerNewsItems = NoticeBoard::where('status', 1)
+                    ->whereIn('type', ['marquee', 'popup'])
+                    ->orderByDesc('added_on')
+                    ->orderByDesc('id')
+                    ->limit(10)
+                    ->get();
+            }
+
+            $view->with('footerNewsItems', $footerNewsItems);
         });
         
         /*

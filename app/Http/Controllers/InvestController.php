@@ -743,9 +743,14 @@ public function productHistoryData(Request $request)
 
         ->addColumn('view', function ($row) {
 
-            $url = route('order.invoice',['id'=>$row->tx_id]);
+            $url = route('order.invoice', ['id' => $row->tx_id]);
+            $fileName = 'invoice_' . $row->tx_id . '.pdf';
 
-            return '<a href="'.$url.'" class="btn btn-sm btn-primary">View</a>';
+            return '<button type="button" class="btn btn-sm btn-primary btn-download-invoice"'
+                . ' data-url="' . e($url) . '"'
+                . ' data-filename="' . e($fileName) . '"'
+                . ' title="Download Invoice">'
+                . '<i class="bx bx-download"></i> Invoice</button>';
 
         })
 

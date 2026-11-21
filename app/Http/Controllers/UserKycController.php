@@ -71,10 +71,13 @@ class UserKycController extends Controller
     public function submitIdentity(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'attached_doc' => 'required|string',
+            'attached_doc' => 'required|in:aadhaar,voter,driving',
             'tax_id' => 'required|string|max:255',
             'front_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'back_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'attached_doc.required' => 'Please select a document type.',
+            'attached_doc.in' => 'Please select Aadhaar Card, Voter ID, or Driving License.',
         ]);
 
         if ($validator->fails()) {

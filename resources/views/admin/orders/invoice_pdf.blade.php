@@ -4,56 +4,73 @@
     <meta charset="utf-8">
     <title>Invoice - {{ $order->tx_id }}</title>
     <style>
+        @page {
+            margin: 12mm 12mm 12mm 12mm;
+        }
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: 'DejaVu Sans', sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
+            font-size: 11px;
+            line-height: 1.35;
             color: #333;
+            margin: 0;
+            padding: 0;
         }
         .invoice-box {
-            max-width: 100%;
-            margin: auto;
-   
+            width: 100%;
         }
         .invoice-header {
             text-align: center;
-            margin-bottom: 50px;
-            padding-bottom: 5px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
             border-bottom: 2px solid #333;
         }
         .company-name {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
+        }
+        .invoice-header div {
+            margin: 0;
+            padding: 0;
         }
         .invoice-title {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
-            margin-top: 5px;
-            margin-bottom: 5px;
+            margin: 8px 0 6px 0;
             text-align: center;
         }
         .order-info {
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
         .order-info table {
             width: 100%;
+            border-collapse: collapse;
         }
         .order-info td {
-            padding: 5px;
+            padding: 2px 4px;
             vertical-align: top;
+            font-size: 11px;
+        }
+        .shipping-info {
+            margin-bottom: 8px;
+            font-size: 11px;
         }
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 5px;
-            margin-bottom: 5px;
+            margin-top: 4px;
+            margin-bottom: 6px;
+            page-break-inside: avoid;
         }
-        .items-table th, .items-table td {
+        .items-table th,
+        .items-table td {
             border: 1px solid #ddd;
-            padding: 4px 5px;
+            padding: 3px 4px;
             text-align: left;
-            font-size: 11px;
+            font-size: 10px;
         }
         .items-table th {
             background-color: #f5f5f5;
@@ -62,51 +79,49 @@
         .text-right {
             text-align: right !important;
         }
-        
-        /* GST Breakdown Section */
         .gst-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
-            margin-top: 5px;
-            margin-bottom: 4px;
+            margin-top: 4px;
+            margin-bottom: 3px;
         }
-
-        /* DomPDF Friendly Totals Table Alignment */
         .totals-wrapper-table {
             width: 100%;
-            margin-top: 5px;
+            margin-top: 4px;
+            page-break-inside: avoid;
         }
         .totals-box {
-            width: 300px;
+            width: 280px;
         }
         .totals-box table {
             width: 100%;
             border-collapse: collapse;
         }
         .totals-box td {
-            padding: 5px;
-            font-size: 12px;
+            padding: 3px 4px;
+            font-size: 11px;
         }
         .totals-box .grand-total {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: bold;
             background-color: #f5f5f5;
             border-top: 1px solid #333;
             border-bottom: 1px solid #333;
         }
-   
         .status-badge {
             display: inline-block;
-             margin-top: 10px;
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-size: 11px;
+            margin-top: 2px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 10px;
             font-weight: bold;
         }
         .status-delivered { background: #28a745; color: white; }
         .status-pending { background: #ffc107; color: black; }
         .status-shipped { background: #17a2b8; color: white; }
         .status-cancelled { background: #dc3545; color: white; }
+        .status-returned { background: #6c757d; color: white; }
+        .status-accepted { background: #0d6efd; color: white; }
     </style>
 </head>
 <body>
@@ -115,23 +130,21 @@
         $calculatedSubtotal = 0;
         $calculatedTotalGst = 0;
         $gstBreakdown = [];
-        
+
         foreach($order->items as $item) {
-            $gstPercent = $item->product->gst_percent ?? 18; // Default 18% if not defined
+            $gstPercent = $item->product->gst_percent ?? 18;
             $itemPriceInclusive = $item->price;
             $qty = $item->qty;
-            
-            // Formula to reverse extract GST from inclusive price
+
             $gstAmountPerUnit = ($itemPriceInclusive * $gstPercent) / (100 + $gstPercent);
             $taxablePricePerUnit = $itemPriceInclusive - $gstAmountPerUnit;
-            
+
             $itemTaxableTotal = $taxablePricePerUnit * $qty;
             $itemGstTotal = $gstAmountPerUnit * $qty;
-            
+
             $calculatedSubtotal += $itemTaxableTotal;
             $calculatedTotalGst += $itemGstTotal;
-            
-            // Group by GST percentages
+
             if (!isset($gstBreakdown[$gstPercent])) {
                 $gstBreakdown[$gstPercent] = [
                     'rate' => $gstPercent,
@@ -161,9 +174,9 @@
                         <strong>Order Details:</strong><br>
                         Order ID: {{ $order->tx_id }}<br>
                         Order Date: {{ \Carbon\Carbon::parse($order->added_on)->format('d-m-Y H:i') }}<br>
-                        Order Status: 
+                        Order Status:
                         @php
-                            $statusText = match($order->status) {
+                            $statusText = match((int) $order->status) {
                                 0 => 'Pending',
                                 1 => 'Shipped',
                                 2 => 'Delivered',
@@ -173,7 +186,7 @@
                                 default => 'Unknown'
                             };
                         @endphp
-                        <span class="mt-3 status-badge status-{{ strtolower($statusText) }}">{{ $statusText }}</span>
+                        <span class="status-badge status-{{ strtolower($statusText) }}">{{ $statusText }}</span>
                     </td>
                     <td width="50%">
                         <strong>Customer Details:</strong><br>
@@ -186,7 +199,7 @@
             </table>
         </div>
 
-        <div class="shipping-info" style="margin-bottom: 20px;">
+        <div class="shipping-info">
             <strong>Shipping Address:</strong><br>
             {{ $order->order_address ?? 'N/A' }}
         </div>
@@ -204,7 +217,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($order->items as $key => $item)
+                @forelse($order->items as $key => $item)
                 @php
                     $gstPercent = $item->product->gst_percent ?? 18;
                     $gstAmountPerUnit = ($item->price * $gstPercent) / (100 + $gstPercent);
@@ -220,12 +233,16 @@
                     <td class="text-right">{{ $gstPercent }}%</td>
                     <td class="text-right">₹{{ number_format($itemTaxableTotal, 2) }}</td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="7" style="text-align:center;">No products found for this order</td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
 
         <div class="gst-title">GST Summary Breakdown</div>
-        <table class="items-table" style="margin-top: 5px;">
+        <table class="items-table">
             <thead>
                 <tr>
                     <th>GST Rate</th>
@@ -236,7 +253,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($gstBreakdown as $gst)
+                @forelse($gstBreakdown as $gst)
                 <tr>
                     <td><strong>{{ $gst['rate'] }}%</strong></td>
                     <td class="text-right">₹{{ number_format($gst['taxable'], 2) }}</td>
@@ -244,7 +261,11 @@
                     <td class="text-right">₹{{ number_format($gst['gst_amount'] / 2, 2) }} ({{ $gst['rate'] / 2 }}%)</td>
                     <td class="text-right"><strong>₹{{ number_format($gst['gst_amount'], 2) }}</strong></td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="5" style="text-align:center;">No GST data</td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
 
@@ -252,7 +273,7 @@
             <tr>
                 <td width="55%" style="vertical-align: top;">
                     @if($order->order_notes && $order->order_notes != 'Note: ')
-                        <div style="font-size: 11px; color: #555;">
+                        <div style="font-size: 10px; color: #555;">
                             <strong>Order Note:</strong><br>
                             {{ str_replace('Note: ', '', $order->order_notes) }}
                         </div>
@@ -282,8 +303,6 @@
                 </td>
             </tr>
         </table>
-
-    
     </div>
 </body>
 </html>

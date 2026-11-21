@@ -326,28 +326,65 @@ function downloadPDF() {
     // Hide action buttons for PDF
     const element = document.getElementById('invoice-print-area');
     const actionButtons = document.querySelector('.row.mb-3');
-    
+    const defaultName = 'invoice-{{ $order->tx_id }}.pdf';
+
     if(actionButtons) actionButtons.style.display = 'none';
-    
+
     const opt = {
         margin: [0.3, 0.3, 0.3, 0.3],
-        filename: 'invoice-{{ $order->tx_id }}.pdf',
+        filename: defaultName,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
+        html2canvas: {
             scale: 2,
             letterRendering: true,
             useCORS: true,
             logging: false
         },
-        jsPDF: { 
-            unit: 'in', 
-            format: 'a4', 
+        jsPDF: {
+            unit: 'in',
+            format: 'a4',
             orientation: 'portrait'
         }
     };
-    
-    html2pdf().set(opt).from(element).save().then(() => {
-        if(actionButtons) actionButtons.style.display = 'flex';
+
+    // Ask OS save dialog (filename / file type / location) when supported
+    html2pdf().set(opt).from(element).toPdf().get('pdf').then(async function (pdf) {
+        const blob = pdf.output('blob');
+        try {
+            if (window.showSaveFilePicker) {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: defaultName,
+                    types: [{
+                        description: 'PDF Document',
+                        accept: { 'application/pdf': ['.pdf'] }
+                    }]
+                });
+                const writable = await handle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+            } else {
+                // Fallback browsers: anchor download still lets user confirm via browser settings
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = defaultName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            }
+        } catch (err) {
+            // User cancelled save dialog — ignore
+            if (err && err.name !== 'AbortError') {
+                console.error(err);
+                alert('Unable to save invoice. Please try again.');
+            }
+        } finally {
+            if (actionButtons) actionButtons.style.display = 'flex';
+        }
+    }).catch(function () {
+        if (actionButtons) actionButtons.style.display = 'flex';
+        alert('Unable to generate invoice PDF.');
     });
 }
 

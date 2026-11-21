@@ -40,6 +40,7 @@
                     <th>Order ID</th>
                     <th>Amount</th>
                     <th>Status</th>
+                    <th>Invoice</th>
                     <th>Date</th>
                 </tr>
             </thead>
@@ -75,10 +76,11 @@ $(function() {
     { data: 'tx_id', name: 'tx_id' },
     { data: 'order_amount', name: 'order_amount' },
     { data: 'status_label', name: 'status_label', orderable: false },
+    { data: 'invoice_status', name: 'invoice_status', orderable: false, searchable: false },
     { data: 'added_on', name: 'added_on' }
 ],
 // બાય ડિફોલ્ટ ઓર્ડર ID અથવા તારીખ પર સોર્ટિંગ સેટ કરો
-order: [[6, 'desc']],
+order: [[7, 'desc']],
         dom: 'Bfrtip',
         buttons: ['csv', 'excel', 'pdf', 'print']
     });
@@ -87,6 +89,64 @@ order: [[6, 'desc']],
     $('#btnReset').click(function() { 
         $('.form-control').val(''); 
         table.draw(); 
+    });
+
+    async function saveInvoiceBlob(blob, filename) {
+        if (window.showSaveFilePicker) {
+            const handle = await window.showSaveFilePicker({
+                suggestedName: filename,
+                types: [{
+                    description: 'PDF Document',
+                    accept: { 'application/pdf': ['.pdf'] }
+                }]
+            });
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    $(document).on('click', '.btn-download-invoice', async function () {
+        const btn = $(this);
+        const url = btn.data('url');
+        const filename = btn.data('filename') || 'invoice.pdf';
+        if (!url) return;
+
+        btn.prop('disabled', true);
+        try {
+            const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'download=1', {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/pdf' }
+            });
+            if (!res.ok) throw new Error('Download failed');
+            const blob = await res.blob();
+            await saveInvoiceBlob(blob, filename);
+            table.draw(false);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('Saved', 'Invoice downloaded successfully.', 'success');
+            }
+        } catch (err) {
+            if (err && err.name === 'AbortError') {
+                // user cancelled save dialog
+            } else if (typeof Swal !== 'undefined') {
+                Swal.fire('Error', 'Unable to download invoice.', 'error');
+            } else {
+                alert('Unable to download invoice.');
+            }
+        } finally {
+            btn.prop('disabled', false);
+        }
     });
 
     $(document).on('click', '.btn-delete-order', function () {

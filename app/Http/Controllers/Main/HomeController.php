@@ -537,7 +537,7 @@ public function shop(Request $request)
 
         return response()->json([
             'status'     => true,
-            'message'    => 'Item removed from cart',
+            'message'    => 'Product removed from the cart',
             'cart_items' => $cartItems->sum('quantity'),
             'cart_total' => number_format(
                 $cartItems->sum(fn($i) => $i->dp * $i->quantity),

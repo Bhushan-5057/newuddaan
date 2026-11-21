@@ -207,15 +207,10 @@
                                     <label for="document_type" class="form-label">Select Document</label>
                                     <select id="document_type" name="attached_doc" class="form-select"
                                         @if ($kycDetails->kyc_status_identity == 'submitted' || $kycDetails->kyc_status_identity == 'approved') disabled @endif>
-                                       
-                                       <option value="aadhaar" @if ($kycDetails->attached_doc == 'aadhaar') selected @endif>Aadhaar
-                                        </option>
-                                        {{-- <option value="voter" @if ($kycDetails->attached_doc == 'voter') selected @endif>Voter ID
-                                        </option> 
-                                        <option value="driving" @if ($kycDetails->attached_doc == 'driving') selected @endif>RC Book
-                                            </option> --}}
-                                        {{-- <option value="passport" @if ($kycDetails->attached_doc == 'passport') selected @endif>
-                                            Passport</option> --}}
+                                        <option value="">Select Document</option>
+                                        <option value="aadhaar" @selected(old('attached_doc', $kycDetails->attached_doc) == 'aadhaar')>Aadhaar Card</option>
+                                        <option value="voter" @selected(old('attached_doc', $kycDetails->attached_doc) == 'voter')>Voter ID</option>
+                                        <option value="driving" @selected(old('attached_doc', $kycDetails->attached_doc) == 'driving')>Driving License</option>
                                     </select>
                                     @error('attached_doc')
                                         <div class="text-danger mt-2">{{ $message }}</div>

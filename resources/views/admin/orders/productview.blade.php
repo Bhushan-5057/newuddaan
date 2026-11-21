@@ -206,6 +206,9 @@
             <button onclick="printInvoiceOnly()" class="btn btn-print-invoice">
                 <i class="bx bx-printer me-1"></i> 📄 Print Invoice Only
             </button>
+            <button type="button" onclick="downloadAdminInvoice()" class="btn btn-success">
+                <i class="bx bx-download me-1"></i> Download Invoice
+            </button>
             <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">Back</a>
         </div>
     </div>
@@ -683,10 +686,57 @@ document.addEventListener('DOMContentLoaded', function() {
         document.title = originalTitle;
     }
     
+    async function downloadAdminInvoice() {
+        const url = "{{ route('admin.orders.print-invoice', $order->id) }}?download=1";
+        const filename = "invoice_{{ $order->tx_id }}.pdf";
+        try {
+            const res = await fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/pdf' }
+            });
+            if (!res.ok) throw new Error('Download failed');
+            const blob = await res.blob();
+            if (window.showSaveFilePicker) {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: filename,
+                    types: [{
+                        description: 'PDF Document',
+                        accept: { 'application/pdf': ['.pdf'] }
+                    }]
+                });
+                const writable = await handle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+            } else {
+                const objectUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = objectUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(objectUrl);
+            }
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('Saved', 'Invoice downloaded successfully.', 'success');
+            }
+        } catch (err) {
+            if (err && err.name === 'AbortError') return;
+            alert('Unable to download invoice.');
+        }
+    }
+
     function printInvoiceOnly() {
         var originalTitle = document.title;
         document.title = 'Tax Invoice - Order {{ $order->tx_id }}';
-        
+
+        // Mark invoice generated via existing print-invoice endpoint (sets invoice_no)
+        fetch("{{ route('admin.orders.print-invoice', $order->id) }}?download=1", {
+            method: 'GET',
+            credentials: 'same-origin'
+        }).catch(function () {});
+
         var printContents = document.getElementById('tax-invoice').innerHTML;
         
         var printWindow = window.open('', '_blank');

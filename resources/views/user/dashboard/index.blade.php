@@ -91,6 +91,27 @@
             display: block;
         }
 
+        /* Keep cheque card density aligned with sibling income cards */
+        .dash-stat-card.dash-cheque-card .card-body {
+            align-items: center;
+        }
+
+        .dash-stat-card.dash-cheque-card .dash-cheque-sub {
+            display: block;
+            margin-top: 0.35rem;
+            font-size: 0.75rem;
+            line-height: 1.35;
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dash-stat-card.dash-cheque-card .dash-cheque-icon {
+            background: rgba(255, 255, 255, 0.16);
+            border-radius: 14px;
+        }
+
         /* Default / laptop: cards full width; profile + Matching History share one row below */
         .dash-top-layout.row {
             --bs-gutter-x: 0;
@@ -289,10 +310,51 @@
                                 'binary' => asset('assets/icon/5.png'), // Matching Income
                                 'direct' => asset('assets/icon/4.png'), // Reference Income
                             ];
+
+                            // Fixed titles so live DB aliases (e.g. "Sponsor Income") match local cards
+                            $titleBySlug = [
+                                'reward' => 'Active Bonus',
+                                'binary' => 'Matching Income',
+                                'direct' => 'Reference Income',
+                            ];
                 
                             $colorIndex = 0;
                         @endphp
                 
+                        {{-- Weekly Cheque: same card rhythm as other income tiles --}}
+                        @isset($weeklyCheque)
+                            <div class="col">
+                                <div class="card dash-stat-card dash-cheque-card shadow-sm border-0 rounded-4 h-100"
+                                    style="background: linear-gradient(135deg, #0f626a 0%, #1a9b8e 55%, #2dd4bf 100%);"
+                                    title="Gross {{ company_info('currency', '₹') }}{{ number_format($weeklyCheque['next_gross'], 2) }} · Charge {{ $weeklyCheque['charge_label'] }}@if(!empty($weeklyCheque['last_closing_on'])) · Last closing {{ $weeklyCheque['last_closing_on'] }}@endif">
+                                    <div class="card-body d-flex justify-content-between align-items-center p-3">
+                                        <div class="dash-stat-text pe-2">
+                                            <h6 class="mb-1 fw-semibold small" style="letter-spacing: 0.5px; opacity: 0.9;">
+                                                WEEKLY CHEQUE
+                                            </h6>
+                                            <h4 class="mb-0 fw-bold">
+                                                {{ company_info('currency', '₹') }}
+                                                {{ rtrim(rtrim(number_format($weeklyCheque['next_payable'], 2, '.', ''), '0'), '.') }}
+                                            </h4>
+                                            <small class="dash-cheque-sub">
+                                                Last week
+                                                {{ company_info('currency', '₹') }}
+                                                {{ rtrim(rtrim(number_format($weeklyCheque['last_week'], 2, '.', ''), '0'), '.') }}
+                                                @if(($weeklyCheque['next_pairs'] ?? 0) > 0)
+                                                    · {{ $weeklyCheque['next_pairs'] }} pairs due
+                                                @else
+                                                    · after {{ $weeklyCheque['charge_label'] }}
+                                                @endif
+                                            </small>
+                                        </div>
+                                        <div class="dash-stat-icon dash-cheque-icon">
+                                            <i class="fa-solid fa-money-check-dollar fs-3 text-white"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endisset
+
                         {{-- Dynamic Income Types (Active Bonus, Matching, Reference) --}}
                         @foreach ($incometype as $income)
                             @php
@@ -302,20 +364,11 @@
                                 $colorIndex++;
 
                                 $icon = $iconBySlug[$source] ?? asset('assets/icon/1.png');
+                                $cardTitle = $titleBySlug[$source] ?? $income->name;
 
                                 $amount = $userwallet->{$income->wallet_column} ?? 0;
 
                                 $isBinary = str_contains($source, 'binary');
-                                $lastWeeklyIncome = 0;
-
-                                if ($isBinary) {
-                                    $lastWeeklyIncome = \DB::table('transaction')
-                                        ->where('u_code', auth()->id())
-                                        ->whereIn('source', ['binary', 'binary_topup', 'binary_retopup'])
-                                        ->where('tx_type', 'income')
-                                        ->latest('id')
-                                        ->value('amount') ?? 0;
-                                }
                             @endphp
 
                             <div class="col">
@@ -324,22 +377,29 @@
                                     <div class="card-body d-flex justify-content-between align-items-center p-3">
                                         <div class="dash-stat-text pe-2">
                                             <h6 class="mb-1 fw-semibold small" style="letter-spacing: 0.5px; opacity: 0.9;">
-                                                {{ strtoupper($income->name) }}
+                                                {{ strtoupper($cardTitle) }}
                                             </h6>
                                             <h4 class="mb-0 fw-bold">
                                                 {{ company_info('currency', '₹') . ' ' . rtrim(rtrim(number_format($amount, 3, '.', ''), '0'), '.') }}
                                             </h4>
                                             
-                                            @if($isBinary && $lastWeeklyIncome > 0)
-                                                <small class="d-block mt-1" style="font-size: 0.75rem; opacity: 0.85;">
-                                                    <i class="fa-solid fa-clock-rotate-left me-1"></i>
-                                                    Last Week Income: {{ company_info('currency', '₹') . ' ' . rtrim(rtrim(number_format($lastWeeklyIncome, 3, '.', ''), '0'), '.') }}
+                                            @if($isBinary && !empty($weeklyCheque['this_week_closed']))
+                                                <small class="d-block mt-1" style="font-size: 0.75rem; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                    Closed this week
+                                                    {{ company_info('currency', '₹') }}
+                                                    {{ rtrim(rtrim(number_format($weeklyCheque['this_week_closed'], 2, '.', ''), '0'), '.') }}
+                                                </small>
+                                            @elseif($isBinary && !empty($weeklyCheque['last_week']))
+                                                <small class="d-block mt-1" style="font-size: 0.75rem; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                    Last week
+                                                    {{ company_info('currency', '₹') }}
+                                                    {{ rtrim(rtrim(number_format($weeklyCheque['last_week'], 2, '.', ''), '0'), '.') }}
                                                 </small>
                                             @endif
                                         </div>
 
                                         <div class="dash-stat-icon">
-                                            <img src="{{ $icon }}" alt="{{ $income->name }}">
+                                            <img src="{{ $icon }}" alt="{{ $cardTitle }}">
                                         </div>
                                     </div>
                                 </div>
@@ -1006,7 +1066,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
-                            <small class="text-muted italic"><i class="fa-solid fa-circle-info me-1"></i>Daily Closing</small>
+                            <small class="text-muted italic"><i class="fa-solid fa-circle-info me-1"></i>Weekly Closing</small>
                             <a href="{{ route('user.tree.view') }}" class="f-s-12 fw-bold text-primary text-decoration-none">
                                 Binary Tree <i class="fa-solid fa-arrow-right-long ms-1"></i>
                             </a>
@@ -1086,7 +1146,7 @@
                     </div>
                     
                     <div class="card-footer bg-transparent border-0 text-center pb-3">
-                        <small class="text-muted italic"><i class="fa-solid fa-clock me-1"></i> This income is an estimate and will be credited upon the next weekly closing cron execution.</small>
+                        <small class="text-muted italic"><i class="fa-solid fa-clock me-1"></i> Estimate for the next weekly matching closing. Already closed pairs are not counted again.</small>
                     </div>
                 </div>
             </div>
