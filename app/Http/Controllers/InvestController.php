@@ -702,7 +702,7 @@ class InvestController extends Controller
 public function productHistory()
 {
 
-    $orders = Order::with('items.product')
+    $orders = Order::with(['items.product', 'user'])
         ->where('u_code',auth()->id())
         ->where('tx_type','product')
         ->latest('added_on')
@@ -713,9 +713,10 @@ public function productHistory()
 public function productHistoryData(Request $request)
 {
 
-    $orders = Order::where('u_code', auth()->id())
+    $orders = Order::with('user')
+        ->where('u_code', auth()->id())
         ->where('tx_type', 'product')
-        ->select('id','tx_id','order_amount','order_bv','added_on','status')
+        ->select('id','tx_id','u_code','order_amount','order_bv','added_on','status')
         ->orderBy('added_on','desc');
 
     return DataTables::of($orders)
@@ -744,7 +745,7 @@ public function productHistoryData(Request $request)
         ->addColumn('view', function ($row) {
 
             $url = route('order.invoice', ['id' => $row->tx_id]);
-            $fileName = 'invoice_' . $row->tx_id . '.pdf';
+            $fileName = $row->invoiceDownloadFilename();
 
             return '<button type="button" class="btn btn-sm btn-primary btn-download-invoice"'
                 . ' data-url="' . e($url) . '"'

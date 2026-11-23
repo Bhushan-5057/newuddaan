@@ -688,7 +688,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function downloadAdminInvoice() {
         const url = "{{ route('admin.orders.print-invoice', $order->id) }}?download=1";
-        const filename = "invoice_{{ $order->tx_id }}.pdf";
+        const filename = @json($order->invoiceDownloadFilename());
         try {
             const res = await fetch(url, {
                 method: 'GET',

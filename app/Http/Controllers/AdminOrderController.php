@@ -179,7 +179,7 @@ class AdminOrderController extends Controller
                 // Completed orders: keep only a compact Download button in this column
                 if ((int) $row->status === 2) {
                     $invoiceUrl = route('admin.orders.print-invoice', $row->id);
-                    $fileName = 'invoice_' . $row->tx_id . '.pdf';
+                    $fileName = $row->invoiceDownloadFilename();
                     $downloadBtn = '<button type="button" class="btn btn-sm btn-success btn-download-invoice"'
                         . ' data-url="' . e($invoiceUrl) . '"'
                         . ' data-filename="' . e($fileName) . '"'
@@ -235,7 +235,7 @@ class AdminOrderController extends Controller
     $pdf = Pdf::loadHTML($html);
     $pdf->setPaper('A4', 'portrait');
 
-    $fileName = 'invoice_' . $order->tx_id . '.pdf';
+    $fileName = $order->invoiceDownloadFilename();
 
     // Attachment download so browser can prompt save location / filename
     if (request()->boolean('download')) {

@@ -326,7 +326,7 @@ function downloadPDF() {
     // Hide action buttons for PDF
     const element = document.getElementById('invoice-print-area');
     const actionButtons = document.querySelector('.row.mb-3');
-    const defaultName = 'invoice-{{ $order->tx_id }}.pdf';
+    const defaultName = @json($order->invoiceDownloadFilename());
 
     if(actionButtons) actionButtons.style.display = 'none';
 

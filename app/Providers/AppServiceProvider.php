@@ -81,7 +81,11 @@ class AppServiceProvider extends ServiceProvider
             static $categories = null;
 
             if ($categories === null) {
-                $categories = Category::where('status', 1)->get();
+                try {
+                    $categories = Category::where('status', 1)->get();
+                } catch (\Throwable $e) {
+                    $categories = collect();
+                }
             }
 
             $view->with('categories', $categories);
@@ -176,15 +180,24 @@ class AppServiceProvider extends ServiceProvider
         |----------------------------------------------------------------------
         | Global Data (Available in ALL Views)
         |----------------------------------------------------------------------
+        | Wrapped so artisan/deploy still runs when MySQL credentials are wrong
+        | (otherwise every command 500s during boot, including config:clear).
         */
-        $RegistrationType = AdvanceInfo::where('label', 'reg_type')->value('value');
+        $RegistrationType = 'generation';
+        $incometype = collect();
 
-        $incometype = WalletType::where('wallet_type', 'income')
-            ->where($RegistrationType, '1')
-            ->where('status', true)
-            ->get();
+        try {
+            $RegistrationType = AdvanceInfo::where('label', 'reg_type')->value('value') ?: 'generation';
 
-        // 🔥 Share globally
+            $incometype = WalletType::where('wallet_type', 'income')
+                ->where($RegistrationType, '1')
+                ->where('status', true)
+                ->get();
+        } catch (\Throwable $e) {
+            // Keep boot alive; pages that need DB will still error until .env DB is fixed.
+            report($e);
+        }
+
         View::share([
             'RegistrationType' => $RegistrationType,
             'incometype'       => $incometype,

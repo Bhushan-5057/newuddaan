@@ -240,5 +240,38 @@ class Order extends Model
 
     }
 
+    /**
+     * Suggested PDF save name: "NU28558 + RAHUL KRISHNAKANT.pdf"
+     * (user id/username + member full name). Falls back safely if user missing.
+     */
+    public function invoiceDownloadFilename(): string
+    {
+        $user = $this->relationLoaded('user') ? $this->user : $this->user()->first();
+
+        $userId = trim((string) ($user?->username ?? ''));
+        if ($userId === '') {
+            $userId = 'USER' . ($this->u_code ?? $this->tx_user_id ?? $this->id);
+        }
+
+        $fullName = trim((string) ($user?->name ?? ''));
+        if ($fullName === '' && $user) {
+            $fullName = trim(implode(' ', array_filter([
+                $user->first_name ?? null,
+                $user->middle_name ?? null,
+                $user->last_name ?? null,
+            ])));
+        }
+        if ($fullName === '') {
+            $fullName = 'Customer';
+        }
+
+        $base = $userId . ' ' . $fullName;
+        // Windows / save-dialog illegal characters
+        $base = preg_replace('/[\\\\\\/:*?"<>|]+/', '-', $base);
+        $base = preg_replace('/\s+/', ' ', (string) $base);
+
+        return trim((string) $base) . '.pdf';
+    }
+
 }
 

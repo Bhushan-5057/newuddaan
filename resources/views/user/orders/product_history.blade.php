@@ -32,7 +32,7 @@
                     <button type="button"
                             class="btn btn-sm btn-success btn-download-invoice"
                             data-url="{{ route('order.invoice', $order->tx_id) }}"
-                            data-filename="invoice_{{ $order->tx_id }}.pdf"
+                            data-filename="{{ $order->invoiceDownloadFilename() }}"
                             title="Download Invoice">
                         <i class="bx bx-download me-1"></i> Invoice
                     </button>

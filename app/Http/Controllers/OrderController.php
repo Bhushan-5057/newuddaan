@@ -96,7 +96,7 @@ public function invoice($id)
     $pdf = Pdf::loadHTML($html);
     $pdf->setPaper('A4', 'portrait');
 
-    $fileName = 'invoice_' . $order->tx_id . '.pdf';
+    $fileName = $order->invoiceDownloadFilename();
 
     return $pdf->download($fileName);
 }
