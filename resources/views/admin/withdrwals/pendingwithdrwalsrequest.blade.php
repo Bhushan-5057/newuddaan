@@ -51,6 +51,15 @@
     <div class="card p-3 mb-3">
         <div class="row g-3 align-items-end">
             <div class="col-md-3">
+                <label class="form-label">Income Type</label>
+                <select id="income_type" class="form-select">
+                    <option value="">All</option>
+                    <option value="binary">Binary Matching</option>
+                    <option value="rank">Rank Achievement</option>
+                    <option value="royalty">Royalty Income</option>
+                </select>
+            </div>
+            <div class="col-md-3">
                 <label class="form-label">From Date</label>
                 <input type="date" id="from_date" class="form-control">
             </div>
@@ -110,6 +119,7 @@
 <script>
 let table;
 let selectedIds = new Set();
+let selectedUserMeta = new Map();
 
 $(document).ready(function () {
 
@@ -139,8 +149,9 @@ $(document).ready(function () {
         ajax: {
             url: "{{ route('admin.withdrwalstransactionsrequest.list') }}",
             data: function (d) {
-                d.from_date = $('#from_date').val();
-                d.to_date   = $('#to_date').val();
+                d.from_date   = $('#from_date').val();
+                d.to_date     = $('#to_date').val();
+                d.income_type = $('#income_type').val();
             }
         },
 
@@ -182,7 +193,9 @@ $(document).ready(function () {
     });
 
     $('#resetBtn').on('click', function () {
-        $('#from_date,#to_date').val('');
+        $('#from_date,#to_date,#income_type').val('');
+        selectedIds.clear();
+        selectedUserMeta.clear();
         table.ajax.reload();
     });
 
@@ -194,16 +207,29 @@ $(document).on('change', '#selectAll', function () {
 
     $('.rowCheckbox').each(function () {
         $(this).prop('checked', checked);
-        checked ? selectedIds.add($(this).val()) : selectedIds.delete($(this).val());
+        rememberSelection($(this), checked);
     });
 });
 
 /* ================= SINGLE CHECKBOX ================= */
 $(document).on('change', '.rowCheckbox', function () {
-    let id = $(this).val();
-    this.checked ? selectedIds.add(id) : selectedIds.delete(id);
+    rememberSelection($(this), this.checked);
     updateSelectAllState();
 });
+
+function rememberSelection($el, checked) {
+    const id = String($el.val());
+    if (checked) {
+        selectedIds.add(id);
+        selectedUserMeta.set(id, {
+            userId: String($el.data('userid') || ''),
+            username: String($el.data('username') || '')
+        });
+    } else {
+        selectedIds.delete(id);
+        selectedUserMeta.delete(id);
+    }
+}
 
 function updateSelectAllState() {
     let total = $('.rowCheckbox').length;
@@ -211,53 +237,114 @@ function updateSelectAllState() {
     $('#selectAll').prop('checked', total > 0 && total === checked);
 }
 
-</script>
+window.getSelectedIds = function() {
+    return Array.from(selectedIds);
+};
 
-    <script>
-
-          window.getSelectedIds = function() {
-                return Array.from(selectedIds);
-            };
-        function bulkApprove() {
-            let ids = getSelectedIds();
-            if (!ids.length) return alert('Select records');
-
-            $.post("{{ route('admin.withdrwalsrequest.bulkApprove') }}", {
-                _token: "{{ csrf_token() }}",
-                ids
-            }, () => $('#transactionTable').DataTable().ajax.reload());
+function buildExportFilename() {
+    const ids = getSelectedIds();
+    const labels = [];
+    ids.forEach(function (id) {
+        const meta = selectedUserMeta.get(String(id));
+        const label = (meta && (meta.username || meta.userId)) || String(id);
+        if (label && !labels.includes(label)) {
+            labels.push(label);
         }
+    });
 
-        function bulkReject() {
-            let ids = getSelectedIds();
-            let reason = prompt('Enter reject reason');
-            if (!ids.length || !reason) return;
+    let idPart = labels.slice(0, 8).join('_') || 'selected';
+    if (labels.length > 8) {
+        idPart += '_plus' + (labels.length - 8);
+    }
 
-            $.post("{{ route('admin.withdrwalsrequest.bulkReject') }}", {
-                _token: "{{ csrf_token() }}",
-                ids,
-                reason
-            }, () => $('#transactionTable').DataTable().ajax.reload());
-        }
+    const type = ($('#income_type').val() || 'all').replace(/[^a-z0-9_-]/gi, '');
+    const date = new Date().toISOString().slice(0, 10);
+    return 'withdrawal_' + type + '_' + idPart + '_' + date + '.csv';
+}
 
-        function exportCSV() {
-            let ids = getSelectedIds();
-            if (!ids.length) return alert('Select records');
-
-            window.location =
-                "{{ route('admin.withdrwalsrequest.export') }}?ids=" + ids.join(',');
-        }
-
-
-        $(document).on('click', '.copy-btn', function() {
-            navigator.clipboard.writeText(
-                $(this).siblings('.copy-text').data('copy')
-            );
-            alert('Copied');
+async function saveCsvBlob(blob, filename) {
+    if (window.showSaveFilePicker) {
+        const handle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{
+                description: 'CSV File',
+                accept: { 'text/csv': ['.csv'] }
+            }]
         });
-    </script>
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return;
+    }
 
-    <script>
-   
-    </script>
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+
+function bulkApprove() {
+    let ids = getSelectedIds();
+    if (!ids.length) return alert('Select records');
+
+    $.post("{{ route('admin.withdrwalsrequest.bulkApprove') }}", {
+        _token: "{{ csrf_token() }}",
+        ids
+    }, () => $('#transactionTable').DataTable().ajax.reload());
+}
+
+function bulkReject() {
+    let ids = getSelectedIds();
+    let reason = prompt('Enter reject reason');
+    if (!ids.length || !reason) return;
+
+    $.post("{{ route('admin.withdrwalsrequest.bulkReject') }}", {
+        _token: "{{ csrf_token() }}",
+        ids,
+        reason
+    }, () => $('#transactionTable').DataTable().ajax.reload());
+}
+
+async function exportCSV() {
+    let ids = getSelectedIds();
+    if (!ids.length) return alert('Select records');
+
+    const filename = buildExportFilename();
+    const url = "{{ route('admin.withdrwalsrequest.export') }}?ids=" + encodeURIComponent(ids.join(','));
+
+    try {
+        const res = await fetch(url, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { 'Accept': 'text/csv' }
+        });
+        if (!res.ok) throw new Error('Export failed');
+        const blob = await res.blob();
+        await saveCsvBlob(blob, filename);
+        if (typeof Swal !== 'undefined') {
+            Swal.fire('Saved', 'CSV exported successfully.', 'success');
+        }
+    } catch (err) {
+        if (err && err.name === 'AbortError') {
+            return;
+        }
+        if (typeof Swal !== 'undefined') {
+            Swal.fire('Error', 'Unable to export CSV.', 'error');
+        } else {
+            alert('Unable to export CSV.');
+        }
+    }
+}
+
+$(document).on('click', '.copy-btn', function() {
+    navigator.clipboard.writeText(
+        $(this).siblings('.copy-text').data('copy')
+    );
+    alert('Copied');
+});
+</script>
 @endsection

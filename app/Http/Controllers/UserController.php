@@ -459,6 +459,7 @@ public function admingetData(Request $request)
         'title',
         'first_name',
         'last_name',
+        'date_of_birth',
         'gender',
         'state',
         'city',
@@ -484,7 +485,11 @@ public function admingetData(Request $request)
 
         // Everything else the registration form collects.
         foreach (self::REGISTRATION_FIELDS as $field) {
-            $payload[$field] = $user->{$field};
+            $value = $user->{$field};
+            if ($field === 'date_of_birth' && $value) {
+                $value = $value->format('Y-m-d');
+            }
+            $payload[$field] = $value;
         }
 
         return response()->json($payload);
@@ -528,6 +533,12 @@ public function admingetData(Request $request)
         $rules['title']       = 'nullable|string|max:20';
         $rules['first_name']  = ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'];
         $rules['last_name']   = ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z]+$/'];
+        $rules['date_of_birth'] = [
+            'nullable',
+            'date',
+            'before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
+            'after_or_equal:' . now()->subYears(100)->format('Y-m-d'),
+        ];
         $rules['gender']      = 'nullable|in:Male,Female,Other';
         $rules['state']       = 'nullable|string|max:100';
         $rules['city']        = 'nullable|string|max:100';
@@ -555,7 +566,11 @@ public function admingetData(Request $request)
             $request->merge(['aadhaar' => preg_replace('/\s+/', '', $request->input('aadhaar'))]);
         }
 
-        $data = $request->validate($rules);
+        $data = $request->validate($rules, [
+            'date_of_birth.date' => 'Please enter a valid birthdate.',
+            'date_of_birth.before_or_equal' => 'User must be at least 18 years old.',
+            'date_of_birth.after_or_equal' => 'Please enter a valid birthdate.',
+        ]);
 
         /*
     |--------------------------------------------------------------------------

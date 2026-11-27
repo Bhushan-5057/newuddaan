@@ -755,26 +755,6 @@
                             </a>
                         </li>
                     @endif
-                    
-                    
-                @if (auth()->user()->hasPermission('Withdrawal_view', 'can_view'))
-                        @php
-                            $payoutKycReady = \App\Models\KycDetail::where('user_id', auth()->id())
-                                ->where('kyc_status_identity', 'approved')
-                                ->where('kyc_status_bank', 'approved')
-                                ->exists();
-                        @endphp
-                        @if ($payoutKycReady)
-                        <li class="no-sub">
-                            <a href="{{ route('user.payout.index') }}">
-                                <span class="menu-icon-box success">
-                                    <i class="fa fa-wallet"></i>
-                                </span>
-                                Payout
-                            </a>
-                        </li>
-                        @endif
-                    @endif
 
                 @if (auth()->user()->hasPermission('Withdrawal Report', 'can_view'))
                         <li class="no-sub">

@@ -489,7 +489,7 @@ public function shop(Request $request)
         $walletBalance = UserWallet::where('u_code', auth()->id())->value('c4') ?? 0;
 
         // કાર્ટ ડેટા પ્રોડક્ટ સાથે ફેચ કરો
-        $carts = Cart::with('product')->where('u_code', $user->id)->get();
+        $carts = Cart::with('product.category')->where('u_code', $user->id)->get();
 
         if ($carts->isEmpty()) {
             return redirect()->route('dashboard.user')->with('error', 'Your cart is empty.');
@@ -533,7 +533,8 @@ public function shop(Request $request)
 
         $cartItem->delete();
 
-        $cartItems = Cart::where('u_code', $user->id)->get();
+        $cartItems = Cart::with('product')->where('u_code', $user->id)->get();
+        $totalBV = $cartItems->sum(fn($i) => ($i->product->product_bv ?? 0) * $i->quantity);
 
         return response()->json([
             'status'     => true,
@@ -542,7 +543,8 @@ public function shop(Request $request)
             'cart_total' => number_format(
                 $cartItems->sum(fn($i) => $i->dp * $i->quantity),
                 2
-            )
+            ),
+            'total_bv'   => $totalBV,
         ]);
     }
 
@@ -626,7 +628,7 @@ public function placeOrder(Request $request)
         ->sum('order_bv');
     $isEligible = $userBV >= 100;
 
-    $carts = Cart::with('product')->where('u_code', $user->id)->get();
+    $carts = Cart::with('product.category')->where('u_code', $user->id)->get();
 
     if ($carts->isEmpty()) {
         return redirect()->route('dashboard.user')->with('error', 'Your cart is empty!');
@@ -639,6 +641,8 @@ public function placeOrder(Request $request)
             ->findOrFail($request->delivery_contact_id);
 
         // Calculate totals with BOGO logic
+        // 1+1 applies only when user has 100+ BV AND product category has bogo_status enabled
+        // (Beauty / Health Care categories are configured with bogo_status = 1)
         $totalMRP = 0;
         $totalBV = 0;
         $totalPV = 0;
@@ -654,8 +658,11 @@ public function placeOrder(Request $request)
             $productBV = $product->product_bv ?? 0;
             $productPV = $product->pv ?? 0;
 
-            // Apply BOGO logic if user is eligible
-            if ($isEligible) {
+            $categoryBogoActive = $product->category
+                && (int) ($product->category->bogo_status ?? 0) === 1;
+
+            // Apply BOGO only for eligible users on BOGO-enabled categories
+            if ($isEligible && $categoryBogoActive) {
                 // BOGO: For every 1 item purchased, 1 free item added
                 // So total quantity = purchased quantity * 2
                 $freeItems = $quantity; // 1 free for each purchased
@@ -679,8 +686,10 @@ public function placeOrder(Request $request)
             }
 
             $totalMRP += $itemTotal; // This is the amount customer pays
-            $totalBV += $productBV * $totalQuantity; // BV on FULL quantity (including free)
-            $totalPV += $productPV * $totalQuantity; // PV on FULL quantity (including free)
+            // Profile / Auto Topup BV must use PAID qty only.
+            // Free 1+1 items are shipped (total_qty) but must not add BV or price.
+            $totalBV += $productBV * $quantity;
+            $totalPV += $productPV * $quantity;
 
             // Store item data for order creation
             $orderItemsData[] = [
@@ -710,8 +719,8 @@ public function placeOrder(Request $request)
         $order->shipping_status = 'pending';
         $order->package_name = 'Product Order';
         $order->delivery_schedule = $request->delivery_schedule ?? 'All Time';
-        $order->order_bv = $totalBV; // BV on FULL quantity (including free)
-        $order->pv = $totalPV; // PV on FULL quantity (including free)
+        $order->order_bv = $totalBV; // Paid qty BV only (free 1+1 BV excluded)
+        $order->pv = $totalPV; // Paid qty PV only
         $order->roi = 0;
         $order->times = 0;
         $order->roi_bv = 0;
@@ -798,8 +807,13 @@ public function placeOrder(Request $request)
 
         DB::commit();
 
-        return redirect()->route('order.invoice', ['id' => $order->tx_id])
-            ->with('success', 'Order placed successfully! BOGO offer applied - you got ' . $totalFreeItems . ' item(s) FREE!');
+        $successMessage = 'Order placed successfully!';
+        if ($isEligible && $totalFreeItems > 0) {
+            $successMessage = 'Order placed successfully! BOGO offer applied - you got ' . $totalFreeItems . ' item(s) FREE!';
+        }
+
+        return redirect()->route('dashboard.user')
+            ->with('success', $successMessage);
 
     } catch (\Exception $e) {
         DB::rollBack();

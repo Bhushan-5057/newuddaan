@@ -942,12 +942,20 @@
                             <a href="javascript:void(0);" class="menu-link menu-toggle">
                                <i class="menu-icon tf-icons bx bx-support"></i>
                                 <div data-i18n="Support">Support</div>
+                                @if (isset($pendingSupportCount) && $pendingSupportCount > 0)
+                                    <div class="badge rounded-pill bg-danger" style="margin-left: 5px;">
+                                        {{ $pendingSupportCount }}</div>
+                                @endif
                             </a>
                             @if (auth()->user()->hasPermission('Support List', 'can_view'))
                                 <ul class="menu-sub">
                                     <li class="menu-item">
                                         <a href="{{ route('admin.support.pending') }}" class="menu-link">
                                             <div data-i18n="Support List">Support List</div>
+                                            @if (isset($pendingSupportCount) && $pendingSupportCount > 0)
+                                                <div class="badge rounded-pill bg-danger" style="margin-left: 5px;">
+                                                    {{ $pendingSupportCount }}</div>
+                                            @endif
                                         </a>
                                     </li>
                                 </ul>

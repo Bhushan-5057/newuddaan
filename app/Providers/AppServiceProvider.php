@@ -14,6 +14,7 @@ use App\Models\FranchiseOrder;
 use App\Models\TransactionFranchise;
 use App\Models\Category;
 use App\Models\NoticeBoard;
+use App\Models\Support;
 use Illuminate\Pagination\Paginator;
 
 use Illuminate\Support\Facades\Auth;
@@ -165,6 +166,9 @@ class AppServiceProvider extends ServiceProvider
             // actually submit - see KycDetail::ACTIVE_SECTIONS.
             $pendingKycCount = KycDetail::whereAnySection('submitted')->count();
 
+            // Open/Pending support tickets awaiting admin action (status 0=Open, 1=Pending).
+            $pendingSupportCount = Support::whereIn('status', [0, 1])->count();
+
             $view->with([
                 'pendingwithdrwalsrequest' => $pendingwithdrwalsrequest,
                 'pendingPrincipalwithdrwalsrequest' => $pendingPrincipalwithdrwalsrequest,
@@ -173,6 +177,7 @@ class AppServiceProvider extends ServiceProvider
                 'pendingFranchiseOrders'   => $pendingFranchiseOrders,
                 'pendingFranchiseFundRequestCount'   => $pendingFranchiseFundRequestCount,
                 'pendingProductOrdersCount'    => $pendingProductOrdersCount,
+                'pendingSupportCount'      => $pendingSupportCount,
             ]);
         });
 

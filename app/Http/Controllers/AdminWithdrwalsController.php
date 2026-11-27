@@ -60,6 +60,27 @@ class AdminWithdrwalsController extends Controller
             $baseQuery->whereDate('added_on', '<=', $request->to_date);
         }
 
+        // Optional income-type filter (Binary / Rank / Royalty).
+        // Narrows pending withdrawals to users who received that income type.
+        // Leaving it empty keeps the existing "all pending" behaviour.
+        $incomeSources = $this->incomeTypeSources($request->input('income_type'));
+        if ($incomeSources !== null) {
+            $incomeQuery = Transaction::query()
+                ->where('tx_type', 'income')
+                ->whereIn('source', $incomeSources)
+                ->where('status', 1);
+
+            if ($request->filled('from_date')) {
+                $incomeQuery->whereDate('added_on', '>=', $request->from_date);
+            }
+            if ($request->filled('to_date')) {
+                $incomeQuery->whereDate('added_on', '<=', $request->to_date);
+            }
+
+            $incomeUserIds = $incomeQuery->distinct()->pluck('u_code')->filter()->values();
+            $baseQuery->whereIn('u_code', $incomeUserIds->isEmpty() ? [0] : $incomeUserIds->all());
+        }
+
         /* ================= SEARCH ================= */
         if ($search = $request->input('search.value')) {
             $baseQuery->whereHas('user', function ($q) use ($search) {
@@ -124,10 +145,13 @@ class AdminWithdrwalsController extends Controller
             }
 
             /* ================= ROW ================= */
+            $username = $tx->user?->username ?? (string) $tx->u_code;
             $data[] = [
-                'checkbox' => '<input type="checkbox" class="rowCheckbox" value="' . $tx->id . '">',
+                'checkbox' => '<input type="checkbox" class="rowCheckbox" value="' . $tx->id . '"'
+                    . ' data-userid="' . e((string) $tx->u_code) . '"'
+                    . ' data-username="' . e($username) . '">',
                 'DT_RowIndex' => $start + $i + 1,
-                'tx_user' => $tx->user?->username ?? 'N/A',
+                'tx_user' => $username ?: 'N/A',
                 'action' => '
                 <a href="' . route('admin.withdrwalsrequest.detail', $tx->id) . '"
                    class="btn btn-xs btn-success">View</a>
@@ -211,18 +235,46 @@ class AdminWithdrwalsController extends Controller
             ]);
         }
     }
+    /**
+     * Map Auto Withdrawal income-type filter to transaction.source values.
+     * Returns null when no income-type filter should be applied.
+     */
+    private function incomeTypeSources(?string $incomeType): ?array
+    {
+        return match ($incomeType) {
+            'binary'  => ['binary', 'binary_topup', 'binary_retopup'],
+            'rank'    => ['reward'],
+            'royalty' => ['royalty'],
+            default   => null,
+        };
+    }
+
     /* ================= CSV EXPORT ================= */
     public function exportCSV(Request $request)
     {
-        $ids = explode(',', $request->ids);
+        $ids = array_filter(explode(',', (string) $request->ids));
 
         $data = Transaction::with('user')
             ->whereIn('id', $ids)
             ->get();
 
+        $userIds = $data->map(function ($r) {
+            return $r->user?->username ?: (string) $r->u_code;
+        })->filter()->unique()->values();
+
+        $idPart = $userIds->take(8)->implode('_');
+        if ($userIds->count() > 8) {
+            $idPart .= '_plus' . ($userIds->count() - 8);
+        }
+        if ($idPart === '') {
+            $idPart = 'selected';
+        }
+
+        $filename = 'withdrawal_' . $idPart . '_' . date('Y-m-d') . '.csv';
+
         $headers = [
             "Content-Type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=withdrawal_requests_" . date('Y-m-d') . ".csv"
+            "Content-Disposition" => 'attachment; filename="' . $filename . '"',
         ];
 
         $callback = function () use ($data) {

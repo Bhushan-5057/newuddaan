@@ -579,6 +579,23 @@ public function productupdateStatus(Request $request, $id)
 
             /*
             |--------------------------------------------------------------------------
+            | DIRECT / REFERENCE INCOME (sponsor)
+            | Same 30% as pin-panel topup. Once per product order (idempotent).
+            | Admin manual topup path is unchanged — still uses InvestController only.
+            |--------------------------------------------------------------------------
+            */
+            if (($topupBV > 0 || $retopupBV > 0) && (float) $amount > 0) {
+                $directTxType = $topupBV > 0 ? 'topup' : 'retopup';
+                IncomeHelper::giveDirectSponsorIncome(
+                    $receiver,
+                    $amount,
+                    $directTxType,
+                    $order->id
+                );
+            }
+
+            /*
+            |--------------------------------------------------------------------------
             | COMPLETE
             |--------------------------------------------------------------------------
             */

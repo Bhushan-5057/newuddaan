@@ -57,6 +57,7 @@
                         $categoryBogoActive = $item->product->category && $item->product->category->bogo_status == 1;
                         
                         $subTotal += $itemTotal;
+                        // Paid qty BV only — free 1+1 items do not add BV to profile totals
                         $totalBV += ($item->product->product_bv ?? 0) * $item->quantity;
                         
                         // Apply BOGO only if user is eligible AND category has BOGO enabled
@@ -66,7 +67,6 @@
                             $bogoDiscount += $freeItems * $item->dp;
                             $gstAmount = ($itemTotal * $gstPercent) / (100 + $gstPercent);
                             $baseAmount = $itemTotal - $gstAmount;
-                            $totalBV += ($item->product->product_bv ?? 0) * $freeItems;
                             $hasBogoCategories = true;
                         }
                         
@@ -402,14 +402,12 @@
                                                         </tr>
                                                     </table>
                                                 </div>
-                                                @if(company_info('bill_company_bank_qr_image', ''))
-                                                    <div class="col-md-6 text-center">
-                                                        <p><strong>Scan to Pay:</strong></p>
-                                                        <img src="{{ asset('uploads/' . company_info('bill_company_bank_qr_image')) }}" 
-                                                             alt="QR Code" 
-                                                             style="max-width: 180px; border-radius: 10px; border: 2px solid #ddd;">
-                                                    </div>
-                                                @endif
+                                                <div class="col-md-6 text-center">
+                                                    <p><strong>Scan to Pay:</strong></p>
+                                                    <img src="{{ asset('assets/images/QRcode.webp') }}"
+                                                         alt="QR Code"
+                                                         style="max-width: 180px; border-radius: 10px; border: 2px solid #ddd;">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

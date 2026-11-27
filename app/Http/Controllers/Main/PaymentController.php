@@ -180,7 +180,7 @@ class PaymentController extends Controller
 
             DB::commit();
 
-            return redirect()->route('order.invoice', ['id' => $order->tx_id])
+            return redirect()->route('dashboard.user')
                 ->with('success', 'Payment successful! Order placed successfully.');
 
         } catch (\Exception $e) {

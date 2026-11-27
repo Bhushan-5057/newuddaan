@@ -361,6 +361,14 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">Birthdate</label>
+                        <input type="date" id="edit-user-date_of_birth" name="date_of_birth" class="form-control"
+                            max="{{ now()->subYears(18)->format('Y-m-d') }}"
+                            min="{{ now()->subYears(100)->format('Y-m-d') }}" />
+                        <small class="text-muted">User must be at least 18 years old.</small>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">Unique Name</label>
                         <input type="text" id="edit-user-unique_name" name="unique_name" class="form-control" />
                     </div>
@@ -951,7 +959,7 @@
                         $('#edit-user-status').val(user.status);
 
                         // Registration-form fields
-                        ['title', 'first_name', 'last_name', 'gender', 'state',
+                        ['title', 'first_name', 'last_name', 'date_of_birth', 'gender', 'state',
                          'city', 'mobile', 'pan', 'aadhaar', 'unique_name'
                         ].forEach(function(field) {
                             $('#edit-user-' + field).val(user[field] ?? '');

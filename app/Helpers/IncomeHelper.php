@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\UserWallet;
 use App\Models\Transaction;
 use App\Models\AdvanceInfo;
+use App\Models\WalletType;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Traits\BinaryPlacementTrait;
@@ -226,5 +227,157 @@ class IncomeHelper
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | DIRECT / REFERENCE INCOME (sponsor)
+    |--------------------------------------------------------------------------
+    | Same 30% rule as InvestController::processDirectSponsorIncome.
+    | Used when a downline activates / tops up via product delivery Auto Topup
+    | so sponsors receive Reference Income without requiring pin-panel topup.
+    | Idempotent per product order_id when $orderId is provided.
+    */
+
+    public static function giveDirectSponsorIncome($receiver, $packageAmount, string $txType = 'topup', $orderId = null): void
+    {
+        try {
+            if (!$receiver || (float) $packageAmount <= 0) {
+                return;
+            }
+
+            if ($orderId) {
+                $alreadyPaid = Transaction::where('order_id', $orderId)
+                    ->where('tx_type', 'income')
+                    ->where('source', 'direct')
+                    ->exists();
+                if ($alreadyPaid) {
+                    return;
+                }
+            }
+
+            $sponsor = User::where('username', $receiver->sponsor_id)
+                ->where('status', 1)
+                ->first();
+
+            if (!$sponsor) {
+                Log::info('Direct income skipped: sponsor missing/inactive', [
+                    'receiver' => $receiver->username ?? $receiver->id,
+                ]);
+                return;
+            }
+
+            $calculatedIncome = ((float) $packageAmount * 30) / 100;
+            $payable = self::applyDailyIncomeCapping($sponsor->id, $calculatedIncome, 'direct');
+
+            if ($payable <= 0) {
+                return;
+            }
+
+            $sponsorWallet = UserWallet::firstOrNew(['u_code' => $sponsor->id]);
+            $openingBalance = (float) ($sponsorWallet->c1 ?? 0);
+            $closingBalance = $openingBalance + $payable;
+
+            $walletType = WalletType::where('wallet_column', 'c1')->first();
+            $incomeNameData = WalletType::where('slug', 'direct')->first();
+            $incomename = $incomeNameData->name ?? 'Direct Income';
+            $incomeColumn = $incomeNameData->wallet_column ?? 'c16';
+
+            $sponsorWallet->c1 = $closingBalance;
+            $sponsorWallet->{$incomeColumn} = (float) ($sponsorWallet->{$incomeColumn} ?? 0) + $payable;
+            $sponsorWallet->save();
+
+            Transaction::create([
+                'order_id'       => $orderId,
+                'u_code'         => $sponsor->id,
+                'tx_u_code'      => $receiver->id,
+                'tx_type'        => 'income',
+                'debit_credit'   => 'credit',
+                'source'         => 'direct',
+                'wallet_type'    => $walletType->name ?? 'Main Wallet',
+                'amount'         => $payable,
+                'open_wallet'    => $openingBalance,
+                'closing_wallet' => $closingBalance,
+                'date'           => now(),
+                'status'         => 1,
+                'remark'         => "30% {$incomename} from " . ucfirst($txType)
+                    . " of user {$receiver->username} (Amount: {$packageAmount}) on " . now(),
+                'added_on'       => now(),
+            ]);
+
+            Log::info('Direct income credited', [
+                'sponsor' => $sponsor->username,
+                'receiver' => $receiver->username,
+                'amount' => $payable,
+                'order_id' => $orderId,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Direct sponsor income failed', [
+                'receiver_id' => $receiver->id ?? null,
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Daily income capping shared with pin-topup behaviour.
+     * Returns payable amount, or 0 / negative when fully flushed.
+     */
+    private static function applyDailyIncomeCapping(int $userId, float $incomingAmount, string $source): float
+    {
+        $user = User::find($userId);
+        $dailyLimit = (float) (AdvanceInfo::where('label', 'capping')->value('value') ?? 5000);
+
+        $alreadyReceivedToday = (float) Transaction::where('u_code', $userId)
+            ->where('tx_type', 'income')
+            ->whereIn('source', ['roi', 'direct', 'binary', 'reward', 'rank'])
+            ->whereDate('added_on', now()->toDateString())
+            ->sum('amount');
+
+        if ($alreadyReceivedToday >= $dailyLimit) {
+            self::recordFlushAmount($userId, $incomingAmount, $source);
+            self::markCappingHit($user);
+            return 0;
+        }
+
+        $totalPotential = $alreadyReceivedToday + $incomingAmount;
+        if ($totalPotential > $dailyLimit) {
+            $payable = $dailyLimit - $alreadyReceivedToday;
+            $flush = $incomingAmount - $payable;
+            self::recordFlushAmount($userId, $flush, $source);
+            self::markCappingHit($user);
+            return max(0, $payable);
+        }
+
+        return $incomingAmount;
+    }
+
+    private static function markCappingHit($user): void
+    {
+        if ($user && (int) ($user->capping_hit_status ?? 0) === 0) {
+            $user->capping_hit_status = 1;
+            $user->capping_hit_date = now();
+            $user->save();
+        }
+    }
+
+    private static function recordFlushAmount(int $userId, float $amount, string $source): void
+    {
+        if ($amount <= 0) {
+            return;
+        }
+
+        Transaction::create([
+            'u_code' => $userId,
+            'tx_type' => 'flush_out',
+            'debit_credit' => 'debit',
+            'source' => $source,
+            'amount' => $amount,
+            'date' => now(),
+            'status' => 1,
+            'remark' => "Amount Flush Out due to Daily Capping Limit of user ID {$userId} for source {$source} Amount: {$amount}",
+            'added_on' => now(),
+        ]);
     }
 }

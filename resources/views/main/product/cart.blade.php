@@ -8,32 +8,40 @@
         ->get();
     $totalItems = $sidebarCarts->sum('quantity');
     $totalPrice = $sidebarCarts->sum(fn($i) => $i->dp * $i->quantity);
+    $totalBV = $sidebarCarts->sum(fn($i) => ($i->product->product_bv ?? 0) * $i->quantity);
 @endphp
 
 <div class="row m-1">
-    <div class="col-12 ">
-        <h4 class="main-title">Cart</h4>
-        <ul class="app-line-breadcrumbs mb-3">
-            <li class="">
-                <a class="f-s-14 f-w-500" href="{{ route('dashboard.user') }}">
-                    <span>
-                        <i class="ph-duotone ph-stack f-s-16"></i> Dashboard
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a class="f-s-14 f-w-500" href="#">E-shop</a>
-            </li>
-            <li class="active">
-                <a class="f-s-14 f-w-500" href="#">Cart (<span id="sidebar-total-items">{{ $totalItems }}</span>)</a>
-            </li>
-        </ul>
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-1">
+            <div>
+                <h4 class="main-title mb-1">Cart</h4>
+                <ul class="app-line-breadcrumbs mb-0">
+                    <li class="">
+                        <a class="f-s-14 f-w-500" href="{{ route('dashboard.user') }}">
+                            <span>
+                                <i class="ph-duotone ph-stack f-s-16"></i> Dashboard
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="f-s-14 f-w-500" href="#">E-shop</a>
+                    </li>
+                    <li class="active">
+                        <a class="f-s-14 f-w-500" href="#">Cart (<span id="sidebar-total-items">{{ $totalItems }}</span>)</a>
+                    </li>
+                </ul>
+            </div>
+            <a href="{{ route('product.shop') }}" class="btn btn-primary">
+                <i class="ti ti-plus me-1"></i> Add Product
+            </a>
+        </div>
     </div>
 </div>
 <!-- Breadcrumb end -->
 
 <!-- cart start -->
-<div class="row cart-table">
+<div class="row cart-table mt-3">
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body p-0">
@@ -44,6 +52,7 @@
                             <tr>
                                 <th scope="col">Product Name</th>
                                 <th scope="col">Price</th>
+                                <th scope="col">BV</th>
                                 <th scope="col">Quantity</th>
                                 <th scope="col">Total</th>
                                 <th scope="col">Action</th>
@@ -51,6 +60,9 @@
                         </thead>
                         <tbody>
                             @forelse($sidebarCarts as $item)
+                                @php
+                                    $rowBv = ($item->product->product_bv ?? 0) * $item->quantity;
+                                @endphp
                                 <tr data-id="{{ $item->id }}">
                                     <th scope="row">
                                         <div class="d-flex align-items-center gap-2">
@@ -61,16 +73,21 @@
                                             </span>
 
                                             <div class="cart-details">
-                                                <p class="fs-6">
+                                                <p class="fs-6 mb-0">
                                                     <a href="{{ route('product.details', $item->product->slug) }}" class="text-dark">
                                                         {{ $item->product->name }}
                                                     </a>
                                                 </p>
-                                                {{-- જો કલર કે સાઈઝ ડાયનેમિક હોય તો અહિયાં ઉમેરી શકો છો --}}
+                                                <small class="text-muted">{{ number_format($item->product->product_bv ?? 0, 2) }} BV / unit</small>
                                             </div>
                                         </div>
                                     </th>
                                     <td>₹{{ $item->dp }}</td>
+                                    <td>
+                                        <span id="sidebar-item-bv-{{ $item->id }}" class="f-w-600">
+                                            {{ number_format($rowBv, 2) }}
+                                        </span>
+                                    </td>
                                     <td>
                                         <div class="d-flex align-items-center" data-cart-id="{{ $item->id }}">
                                             <button type="button" class="btn btn-danger h-35 w-35 d-flex-center b-r-6 p-0 decrement" onclick="updateCheckoutQty({{ $item->id }}, 'minus')">
@@ -97,8 +114,8 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="5" class="text-center p-4">Your cart is empty</td>
+                                <tr class="cart-empty-row">
+                                    <td colspan="6" class="text-center p-4">Your cart is empty</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -123,6 +140,16 @@
                                     <tr class="total-price">
                                         <th>Sub Total :</th>
                                         <td id="sidebar-total-price" class="text-end f-w-600">₹{{ number_format($totalPrice, 2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Total BV :</th>
+                                        <td id="sidebar-total-bv" class="text-end f-w-600 text-success">{{ number_format($totalBV, 2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="text-muted small pt-0 border-0">
+                                            Buying these products will increase your BV by
+                                            <strong id="sidebar-bv-gain">{{ number_format($totalBV, 2) }}</strong>.
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>

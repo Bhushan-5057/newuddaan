@@ -66,13 +66,13 @@
 
                         <div class="col-md-3">
                             <b>BV :</b>
-                            {{ number_format($item->bv, 2) }}
+                            {{ number_format(($item->bv ?? 0) * ($item->qty ?? 0), 2) }}
                         </div>
 
                         <div class="col-md-3">
                             <b>Price :</b>
                             {{ company_info('currency','₹') }}
-                            {{ number_format($item->price, 2) }}
+                            {{ number_format(($item->price ?? 0) * ($item->qty ?? 0), 2) }}
                         </div>
                     </div>
                     <hr>
@@ -95,7 +95,7 @@
                 <i class="bx bx-shopping-bag" style="font-size:48px;color:#ddd;"></i>
                 <h5 class="mt-3">No Orders Found</h5>
                 <p class="text-muted">You haven't placed any product orders yet.</p>
-                <a href="{{ route('shop') }}" class="btn btn-primary">Start Shopping</a>
+                <a href="{{ route('product.shop') }}" class="btn btn-primary">Start Shopping</a>
             </div>
         </div>
     @endforelse
