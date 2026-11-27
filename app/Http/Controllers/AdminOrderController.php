@@ -327,12 +327,16 @@ public function productupdateStatus(Request $request, $id)
             $order->payment_status = 1;
         }
     }
-    
-    $order->status = $status;
 
-    OrderItem::where('order_id', $order->id)->update([
-        'item_status' => $status
-    ]);
+    // For non-delivery updates, set status immediately.
+    // Delivery (status=2) sets status inside a locked transaction below.
+    if ((int) $status !== 2) {
+        $order->status = $status;
+
+        OrderItem::where('order_id', $order->id)->update([
+            'item_status' => $status
+        ]);
+    }
 
     if ($status == 5) {
         $order->date_accept = now();
@@ -344,7 +348,9 @@ public function productupdateStatus(Request $request, $id)
 
     /*
     |--------------------------------------------------------------------------
-    | ORDER DELIVERED → CREDIT BV
+    | ORDER DELIVERED → CREDIT BV (row lock + idempotent)
+    | Prevents double-click / concurrent delivery from creating duplicate
+    | Auto Topup/Retopup (e.g. 200 BV order becoming 400 personal BV).
     |--------------------------------------------------------------------------
     */
     if ($status == 2) {
@@ -353,7 +359,44 @@ public function productupdateStatus(Request $request, $id)
 
         try {
 
+            // Re-load with FOR UPDATE so a second concurrent delivery waits,
+            // then sees status=2 / existing product_bv and exits cleanly.
+            $order = Order::where('id', $id)->lockForUpdate()->firstOrFail();
+
+            if (in_array((int) $order->status, [2, 3], true)) {
+                DB::rollBack();
+                return back()->with('error', 'This order is locked and cannot be changed.');
+            }
+
+            $alreadyCredited = Transaction::where('order_id', $order->id)
+                ->where('tx_type', 'product_bv')
+                ->where('source', 'product_purchase')
+                ->exists();
+
+            if ($alreadyCredited) {
+                $order->status = 2;
+                $order->date_approve = $order->date_approve ?? now();
+                $order->updated_on = now();
+                $order->save();
+                OrderItem::where('order_id', $order->id)->update(['item_status' => 2]);
+                DB::commit();
+                return back()->with('error', 'BV already credited for this order. Delivery not applied again.');
+            }
+
+            if ($request->filled('payout_id')) {
+                $order->payout_id = $request->payout_id;
+                $order->payment_status = 1;
+            }
+
+            // Mark delivered inside the lock BEFORE credits so racing requests see it.
+            $order->status = 2;
             $order->date_approve = now();
+            $order->updated_on = now();
+            $order->save();
+
+            OrderItem::where('order_id', $order->id)->update([
+                'item_status' => 2
+            ]);
 
             $userWallet = UserWallet::firstOrNew([
                 'u_code' => $order->u_code
